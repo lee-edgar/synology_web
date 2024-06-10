@@ -1,0 +1,21 @@
+
+<style>
+[data-testid="stMetricValue"] {
+    font-size: 14px;
+
+}
+
+[data-testid=metric-container] {
+box-shadow: 0 0 4px #cccccc;
+padding:10px;
+width: 95%; /* 부모 요소의 너비에 대한 50%로 설정 */
+
+}
+
+
+/* And if you want the sidebar to be white as well
+ section[data-testid="stSidebar"] {
+    background-color: white;
+}*/
+
+</style>
