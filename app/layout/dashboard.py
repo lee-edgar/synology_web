@@ -3,10 +3,12 @@ import time
 from datetime import datetime, timedelta
 
 import os
-from app.utils.singleton import singleton
-from app.layout.const import *
+from utils.singleton import singleton
+from layout.const import *
 from st_on_hover_tabs import on_hover_tabs
-from app.style.style import get_sidebar_styles
+from style.style import get_sidebar_styles
+
+
 @singleton
 class DashLayout:
     def __init__(self):
@@ -19,11 +21,9 @@ class DashLayout:
         st.markdown(f'### Update Time = {timedelta(seconds=etime - stime)}')
 
     def draw_sidebar(self):
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        image_path = os.path.join(current_dir, '..\image\kimparkpenguin.jpg')
         st.header("전설의 김박펭귄 모험가의 여정을 담은 페이지입니다.")
+        st.image('image/kimparkpenguin.png')
         with st.sidebar:
-            st.image(image_path, use_column_width=True)
 
             options = list(Menu)
             tabs = on_hover_tabs(

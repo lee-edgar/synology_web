@@ -1,11 +1,11 @@
 import streamlit as st
-from app.layout.dashboard import dashboard_layout
+from layout.dashboard import dashboard_layout
 import sys
 import os
 
 st.set_page_config(
-    page_title="6.5",
-    page_icon="./image/black_logo.png",
+    page_title="Adventures of KimParkPenguin",
+    page_icon="./image/kimparkpenguin.png",
     layout="wide",
     initial_sidebar_state="expanded", #collapsed
     menu_items={
