@@ -18,6 +18,7 @@ st.set_page_config(
 if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     css_path = os.path.join(current_dir, 'style', 'style.css')
+    st.image('image/kimparkpenguin.png', use_column_width='auto')
 
     # CSS 파일을 읽어들임
     with open(css_path, 'r', encoding='utf-8') as css_file:
