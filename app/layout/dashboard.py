@@ -8,7 +8,6 @@ from layout.const import *
 from st_on_hover_tabs import on_hover_tabs
 from style.style import get_sidebar_styles
 from streamlit import session_state as ss
-from streamlit_pdf_viewer import pdf_viewer
 
 @singleton
 class DashLayout:
