@@ -8,6 +8,7 @@ from layout.const import *
 from st_on_hover_tabs import on_hover_tabs
 from style.style import get_sidebar_styles
 from streamlit import session_state as ss
+import requests
 
 @singleton
 class DashLayout:
@@ -21,6 +22,32 @@ class DashLayout:
         st.markdown(f'### Update Time = {timedelta(seconds=etime - stime)}')
 
     def draw_sidebar(self):
+
+        api_url = "http://127.0.0.1:8000/players"
+
+        # Streamlit 제목 설정
+        st.title("Player Name Lookup")
+
+        # 사용자로부터 player_id 입력받기
+        player_id = st.number_input("Enter Player ID:", min_value=1, step=1)
+
+        # 버튼 클릭 시 API 요청
+        if st.button("Get Player Name"):
+            try:
+                # FastAPI 엔드포인트에 요청
+                response = requests.get(f"{api_url}/{player_id}")
+
+                # 응답이 성공적이면 이름 출력
+                if response.status_code == 200:
+                    player_data = response.json()
+                    st.success(f"Player Name: {player_data['name']}")
+                elif response.status_code == 404:
+                    st.error("Player not found.")
+                else:
+                    st.error(f"Error: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                st.error(f"Request failed: {e}")
+
         # st.header("전설의 김박펭귄 모험가의 여정을 담은 페이지입니다.")
         # st.image('image/kimparkpenguin.png', use_column_width='auto')
 
