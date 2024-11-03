@@ -19,7 +19,7 @@ class DashLayout:
         stime = time.time()
         selected = self.draw_sidebar()
         etime = time.time()
-        st.markdown(f'### Update Time = {timedelta(seconds=etime - stime)}')
+        st.markdown(f' Update Time = {timedelta(seconds=etime - stime)}')
         self.update_main_panel(selected=selected)
 
     def draw_sidebar(self):
@@ -50,9 +50,8 @@ class DashLayout:
         #         st.error(f"Request failed: {e}")
 
 
-        st.header("전설의 김박펭귄 모험가의 여정을 담은 페이지입니다.")
-        st.image('app/image/kimparkpenguin.png', use_column_width='auto')
-
+        # st.header("전설의 김박펭귄 모험가의 여정을 담은 페이지입니다.")
+        # st.image('app/image/kimparkpenguin.png', use_column_width='auto')
         # if 'pdf_ref' not in ss:
         #     ss.pdf_ref = None
         # st.file_uploader("Upload PDF file", type=('pdf'), key='pdf')
@@ -103,17 +102,22 @@ class DashLayout:
         #     pass
 
         st.sidebar.header("메뉴")
-
         # Dictionary to map main categories to their subcategories
         submenu_mapping = {
             Menu.study_group: list(StudyGroup),
             Menu.story_group: list(StoryGroup),
-            Menu.profile_group: list(ProfileGroup)
+            Menu.profile_group: list(ProfileGroup),
+            Menu.portfolio_group: list(PortfolioGroup),
+
         }
 
         # Initialize session state for menu
+        # if 'active_tab' not in st.session_state:
+        #     st.session_state.active_tab = None
+
+        # defalut를 profile
         if 'active_tab' not in st.session_state:
-            st.session_state.active_tab = None
+            st.session_state.active_tab = ProfileGroup.profile.value
 
         # Display main categories with default expanded state
         for menu in Menu:
@@ -121,11 +125,30 @@ class DashLayout:
                 for submenu in submenu_mapping[menu]:
                     if st.button(submenu.value, key=f"{menu.value}-{submenu.value}"):
                         st.session_state.active_tab = submenu.value
-
+        return st.session_state.active_tab
 
     def update_main_panel(self, selected:str):
-        st.write('sel',selected)
-        if selected == StoryGroup.synology_web:
-            # self.draw_dev_main()
-            st.write('selected', selected)
+        if selected in [item.value for item in ProfileGroup]:
+            self.draw_ProfileGroup_view(selected)
+        elif selected in [item.value for item in StoryGroup]:
+            self.draw_StoryGroup_view(selected)
+        elif selected in [item.value for item in StudyGroup]:
+            self.draw_StudyGroup_view(selected)
+        elif selected in [item.value for item in PortfolioGroup]:
+            self.draw_PortfolioGroup_view(selected)
+
+
+    def draw_ProfileGroup_view(self, selected):
+        st.markdown(f"{PROFILEGROUP_VIEW_MARKDOWN} ({selected})")
+
+    def draw_StoryGroup_view(self, selected):
+        st.markdown(f"{STORYGROUP_VIEW_MARKDOWN} ({selected})")
+
+    def draw_StudyGroup_view(self, selected):
+        st.markdown(f"{STUDYGROUP_VIEW_MARKDOWN} ({selected})")
+
+    def draw_PortfolioGroup_view(self, selected):
+        st.markdown(f"{PORTFOLIO_VIEW_MARKDOWN} ({selected})")
+
+
 dashboard_layout: DashLayout = DashLayout()

@@ -32,7 +32,7 @@ class Menu(str, Enum):
     study_group = 'Study Group'
     story_group = 'Story Group'
     profile_group = 'Profile Group'
-
+    portfolio_group = 'Portfolio Group'
 
 class StudyGroup(str, Enum):
     kaggle = 'Kaggle'
@@ -53,3 +53,11 @@ class StoryGroup(str, Enum):
 
 class ProfileGroup(str, Enum):
     profile = '프로필'
+
+class PortfolioGroup(str, Enum):
+    Portfolio = '포트폴리오'
+
+PROFILEGROUP_VIEW_MARKDOWN = ' # 프로필 '
+STORYGROUP_VIEW_MARKDOWN = ' # 스토리 '
+STUDYGROUP_VIEW_MARKDOWN = ' # 스터디 '
+PORTFOLIO_VIEW_MARKDOWN = ' # 포트폴리오 '
