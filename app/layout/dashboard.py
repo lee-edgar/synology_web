@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 
 import os
 from utils.singleton import singleton
-from layout.const import *
+from app.layout.const import *
 from st_on_hover_tabs import on_hover_tabs
 from style.style import get_sidebar_styles
 from streamlit import session_state as ss
@@ -17,39 +17,41 @@ class DashLayout:
 
     def draw_dashboard(self):
         stime = time.time()
-        self.draw_sidebar()
+        selected = self.draw_sidebar()
         etime = time.time()
         st.markdown(f'### Update Time = {timedelta(seconds=etime - stime)}')
+        self.update_main_panel(selected=selected)
 
     def draw_sidebar(self):
 
-        api_url = "http://127.0.0.1:8000/players"
+        # api_url = "http://127.0.0.1:8000/players"
+        #
+        # # Streamlit 제목 설정
+        # st.title("Player Name Lookup")
+        #
+        # # 사용자로부터 player_id 입력받기
+        # player_id = st.number_input("Enter Player ID:", min_value=1, step=1)
+        #
+        # # 버튼 클릭 시 API 요청
+        # if st.button("Get Player Name"):
+        #     try:
+        #         # FastAPI 엔드포인트에 요청
+        #         response = requests.get(f"{api_url}/{player_id}")
+        #
+        #         # 응답이 성공적이면 이름 출력
+        #         if response.status_code == 200:
+        #             player_data = response.json()
+        #             st.success(f"Player Name: {player_data['name']}")
+        #         elif response.status_code == 404:
+        #             st.error("Player not found.")
+        #         else:
+        #             st.error(f"Error: {response.status_code}")
+        #     except requests.exceptions.RequestException as e:
+        #         st.error(f"Request failed: {e}")
 
-        # Streamlit 제목 설정
-        st.title("Player Name Lookup")
 
-        # 사용자로부터 player_id 입력받기
-        player_id = st.number_input("Enter Player ID:", min_value=1, step=1)
-
-        # 버튼 클릭 시 API 요청
-        if st.button("Get Player Name"):
-            try:
-                # FastAPI 엔드포인트에 요청
-                response = requests.get(f"{api_url}/{player_id}")
-
-                # 응답이 성공적이면 이름 출력
-                if response.status_code == 200:
-                    player_data = response.json()
-                    st.success(f"Player Name: {player_data['name']}")
-                elif response.status_code == 404:
-                    st.error("Player not found.")
-                else:
-                    st.error(f"Error: {response.status_code}")
-            except requests.exceptions.RequestException as e:
-                st.error(f"Request failed: {e}")
-
-        # st.header("전설의 김박펭귄 모험가의 여정을 담은 페이지입니다.")
-        # st.image('image/kimparkpenguin.png', use_column_width='auto')
+        st.header("전설의 김박펭귄 모험가의 여정을 담은 페이지입니다.")
+        st.image('app/image/kimparkpenguin.png', use_column_width='auto')
 
         # if 'pdf_ref' not in ss:
         #     ss.pdf_ref = None
@@ -59,7 +61,7 @@ class DashLayout:
         # if ss.pdf_ref:
         #     binary_data = ss.pdf_ref.getvalue()
         #     pdf_viewer(input=binary_data, width=700)
-
+        #
         # options = list(Menu)
         # tabs = on_hover_tabs(
         #     tabName=[menu.value for menu in options],
@@ -120,4 +122,10 @@ class DashLayout:
                     if st.button(submenu.value, key=f"{menu.value}-{submenu.value}"):
                         st.session_state.active_tab = submenu.value
 
+
+    def update_main_panel(self, selected:str):
+        st.write('sel',selected)
+        if selected == StoryGroup.synology_web:
+            # self.draw_dev_main()
+            st.write('selected', selected)
 dashboard_layout: DashLayout = DashLayout()

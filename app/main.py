@@ -1,7 +1,10 @@
 import streamlit as st
-from layout.dashboard import dashboard_layout
+
 import sys
+sys.path.append('.')
+
 import os
+from app.layout.dashboard import dashboard_layout
 
 st.set_page_config(
     page_title="Adventures of KimParkPenguin",
