@@ -6,17 +6,17 @@ sys.path.append('.')
 import os
 from app.layout.dashboard import dashboard_layout
 
-st.set_page_config(
-    page_title="Adventures of KimParkPenguin",
-    page_icon="./image/kimparkpenguin.png",
-    layout="wide",
-    initial_sidebar_state="expanded", #collapsed
-    menu_items={
-        'Get Help': 'https://www.channelbiome.com/',
-        'Report a bug': "https://www.channelbiome.com/",
-        'About': "https://www.channelbiome.com/"
-    }
-)
+# st.set_page_config(
+#     page_title="Adventures of KimParkPenguin",
+#     page_icon="./image/kimparkpenguin.png",
+#     layout="wide",
+#     initial_sidebar_state="expanded", #collapsed
+#     menu_items={
+#         'Get Help': 'https://www.channelbiome.com/',
+#         'Report a bug': "https://www.channelbiome.com/",
+#         'About': "https://www.channelbiome.com/"
+#     }
+# )
 
 if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))

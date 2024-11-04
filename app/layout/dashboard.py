@@ -400,6 +400,8 @@ class DashLayout:
                 headers = { 'Accept': 'application/json' }
 
                 response = requests.get(api_url, headers=headers)
+                st.write('response', response)
+
                 try:
                     content = response.json()
                     if "error" in content:

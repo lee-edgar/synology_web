@@ -1,4 +1,5 @@
-# self.api_url = "http://localhost:8000/api"
-# self.api_url = "http://localhost:8501/api"
-LOCAL_URL = "http://127.0.0.1:8501/api"
-BACKEND_URL = LOCAL_URL
+LOCAL_HOST = "127.0.0.1"
+SERVER_HOST = "218.235.38.85"
+
+BACKEND_HOST = SERVER_HOST
+BACKEND_URL = f"http://{BACKEND_HOST}:8000/api"
