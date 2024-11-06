@@ -29,3 +29,50 @@ if __name__ == '__main__':
     st.markdown(css_code, unsafe_allow_html=True)
 
     dashboard_layout.draw_dashboard()
+
+
+# import sys, os
+# sys.path.append('.')
+#
+# from fastapi import FastAPI
+# from fastapi.middleware.cors import CORSMiddleware
+# from contextlib import asynccontextmanager
+# from backend.api.content import router as content_router
+# from backend.api.career import router as career_router
+#
+# import os, sys
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# from app.common.common import BACKEND_HOST
+# from backend.db.session import engine
+# from backend.models.base import Base
+# import streamlit as st
+#
+#
+#
+#
+# app = FastAPI(title="Portfolio API")
+#
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=[f"http://{BACKEND_HOST}:8501"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
+#
+# # 라우터 등록
+# app.include_router(content_router, prefix="/api", tags=["content"])
+# app.include_router(career_router, prefix="/api", tags=["careers"])  # 태그 추가
+#
+# # @app.on_event("startup")
+# # async def startup():
+# #     print("Registered routes:")
+# #     for route in app.routes:
+# #         print(f"  {route.path} [{route.methods}]")
+# #     Base.metadata.create_all(bind=engine)
+#
+
+#
+# @app.get("/")
+# async def root():
+#     return {"message": "API is running"}

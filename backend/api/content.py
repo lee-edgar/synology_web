@@ -48,14 +48,45 @@
 
 # backend/api/content.py
 # backend/api/content.py
+
+
+"""
+Streamlit 사이드바의 메뉴 구조를 위한 정적 데이터를 제공하는 라우터입니다.
+backend/main.py의 app.include_router(content_router, prefix="/api")를 통해 등록되며,
+단순히 하드코딩된 메뉴 데이터를 반환합니다.
+
+추가적인 DB 조회나 다른 파일과의 상호작용 없이 독립적으로 동작하며,
+메뉴 구조가 변경될 때만 이 파일의 content 딕셔너리를 수정하면 됩니다.
+"""
+
 from fastapi import APIRouter
 import logging
 import json
+
+
 router = APIRouter()
 
 
 @router.get("/content/{group}/{submenu}")
 async def get_content(group: str, submenu: str):
+    """
+    메뉴 그룹과 서브메뉴에 해당하는 기본 컨텐츠를 반환합니다.
+
+    Args:
+        group (str): 메뉴 그룹명 (StudyGroup, StoryGroup 등)
+        submenu (str): 서브메뉴명 (Kaggle, Paper 등)
+
+    Returns:
+        dict: 해당 메뉴의 제목과 부제목을 포함한 딕셔너리
+            {
+                "title": str,
+                "subtitle": str
+            }
+
+    Raises:
+        HTTPException: 요청한 메뉴가 존재하지 않는 경우
+
+    """
     # 디버깅을 위한 로그
     logging.info(f"Requested - group: {group}, submenu: {submenu}")
 
