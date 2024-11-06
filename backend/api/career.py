@@ -63,7 +63,7 @@ def create_career(career: CareerCreate, db: Session = Depends(get_db)):
 
 
 
-@router.get("/read_careers/", response_model=List[Career])
+@router.get("/careers/", response_model=List[Career])
 def read_careers(db: Session = Depends(get_db)):
     '''
     모든 경력 정보를 조회하는 엔드포인트
