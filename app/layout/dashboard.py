@@ -451,7 +451,6 @@ class DashLayout:
             if response.status_code == 200:
                 careers = response.json()
                 st.title("🏢 경력 사항")
-                # st.write('careers',careers[0]['files'])
 
                 for career in careers:
                     with st.container():
@@ -473,7 +472,7 @@ class DashLayout:
 
                         if career.get('files'):
                             try:
-                                files = career.get('files').split(", ")  # 쉼표와 공백을 기준으로 분리
+                                files = career.get('files')
                                 # 파일 이름과 타입 추출
                                 file_name = files[0]
                                 file_type = files[1]
@@ -482,9 +481,9 @@ class DashLayout:
                                 # 파일 타입에 따라 처리
                                 if file_type == 'image':
                                     if file_caption is None :
-                                        st.image(file_name)
+                                        st.image(file_name, use_column_width='always')
                                     else:
-                                        st.image(file_name, caption=file_caption)
+                                        st.image(file_name, caption=file_caption, use_column_width='always')
                                 elif file_type == 'pdf':
                                     st.write("📄 관련 문서")
                                     col1, col2 = st.columns([3, 1])
@@ -503,7 +502,7 @@ class DashLayout:
                         # 태그 표시
                         if career.get('tags'):
                             try:
-                                tags = career.get('tags').split(", ")
+                                tags = career.get('tags')
                                 max_columns = 1
                                 for i in range(0, len(tags), max_columns):
                                     cols = st.columns(max_columns)
@@ -516,7 +515,6 @@ class DashLayout:
                             except json.JSONDecodeError as e:
                                 st.error(f"태그 파싱 오류: {str(e)}")
                             st.write("---")  # 구분선
-
             else:
                 st.error(f"데이터를 불러오는데 실패했습니다. (Status: {response.status_code})")
                 if response.text:
