@@ -7,7 +7,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from app.common.common import BACKEND_HOST
 from db.session import engine
 from models.base import Base
-from api.career import router as carrer_router
+from api.career import router as career_router
 from contextlib import asynccontextmanager
 
 
@@ -25,7 +25,7 @@ app.add_middleware(
 
 # 3. 라우터 등록
 app.include_router(content_router, prefix="/api")
-app.include_router(carrer_router, prefix="/api") # career 관련 모든 엔드포인트 설정
+app.include_router(career_router, prefix="/api") # career 관련 모든 엔드포인트 설정
 
 
 
