@@ -75,6 +75,17 @@ def read_careers(db: Session = Depends(get_db)):
         List[Carrer] : 경력 정보 목록
     '''
     careers = db.query(CareerModel).order_by(CareerModel.start_date.desc()).all()
+
+    for career in careers:
+        # tags가 쉼표로 구분된 문자열이라면, 이를 리스트로 변환
+        if isinstance(career.tags, str):
+            career.tags = career.tags.split(", ")
+
+        # files가 쉼표로 구분된 문자열이라면, 이를 리스트로 변환
+        if isinstance(career.files, str):
+            career.files = [file.strip() for file in career.files.split(", ")]
+
+
     return careers
 
 

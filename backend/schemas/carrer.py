@@ -10,8 +10,8 @@ class CareerBase(BaseModel):
     end_date: Optional[str] = None
     location: Optional[str] = None
     description: Optional[str] = None
-    tags: Optional[List[Dict[str, Any]]] = None
-    files: Optional[List[Dict[str, Any]]] = None  # JSON 형태의 파일 정보
+    # tags: Optional[List[Dict[str, Any]]] = None
+    # files: Optional[List[Dict[str, Any]]] = None  # JSON 형태의 파일 정보
     tags: List[str] = []
     files: List[str] = []
     # files: Optional[str] = None
