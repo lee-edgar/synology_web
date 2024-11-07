@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import json
 
-from networkx import draw_networkx
 
 from app.common.common import BACKEND_URL
 from app.utils.singleton import  singleton
