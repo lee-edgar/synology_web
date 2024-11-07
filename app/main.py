@@ -5,7 +5,9 @@ sys.path.append('.')
 
 import os
 from app.layout.dashboard import dashboard_layout
-
+from app.common.common import BACKEND_URL
+import requests
+import json
 # st.set_page_config(
 #     page_title="Adventures of KimParkPenguin",
 #     page_icon="./image/kimparkpenguin.png",
@@ -27,8 +29,11 @@ if __name__ == '__main__':
     with open(css_path, 'r', encoding='utf-8') as css_file:
         css_code = css_file.read()
     st.markdown(css_code, unsafe_allow_html=True)
-
-    dashboard_layout.draw_dashboard()
+    try:
+        response = requests.get(f"{BACKEND_URL}/server_sync")
+        dashboard_layout.draw_dashboard()
+    except Exception as e:
+        st.error("☠️ backend server is dead ☠️")
 
 
 # import sys, os
