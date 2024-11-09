@@ -22,17 +22,21 @@ class Profile:
                 careers = response.json()
                 st.title("🏢 경력 사항")
                 for career in careers:
-                    with st.expander(f"{career['title']}", expanded=True):
+                    # with st.expander(f"{career['title']}", expanded=True):
+                    with st.expander(" 경력 사항 ", expanded=True):
+
                         with st.container():
                             col1, col2 = st.columns([3, 1])
                             with col1:
                                 # 회사명과 직책
                                 st.subheader(f"{career['title']}")
                                 st.write(f"🏢 **{career['company']}**  •  {career['company_type']}  •  {career['location']}")
+
+
                             with col2:
                                 # 근무 기간
                                 period = f"{career['start_date']} ~ {career['end_date'] if career['end_date'] else '현재'}"
-                                st.caption(f"🗓️ {period}")
+                                st.write(f"🗓️ {period}")
                             # 업무 설명
                             if career.get('description'):
                                 st.markdown(career['description'])
@@ -83,7 +87,7 @@ class Profile:
                                                 )
                                 except json.JSONDecodeError as e:
                                     st.error(f"태그 파싱 오류: {str(e)}")
-                                st.write("---")  # 구분선
+                                # st.write("---")  # 구분선
             else:
                 st.error(f"데이터를 불러오는데 실패했습니다. (Status: {response.status_code})")
                 if response.text:
