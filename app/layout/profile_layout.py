@@ -12,8 +12,10 @@ class Profile:
         pass
 
     def draw(self):
-        st.markdown(f"{PROFILEGROUP_VIEW_MARKDOWN}")
+        # st.markdown(f"{PROFILEGROUP_VIEW_MARKDOWN}")
+        # st.write('---')
         self.draw_profile_group_view()
+
 
     def draw_profile_group_view(self):
         try:
@@ -96,4 +98,3 @@ class Profile:
         except Exception as e:
             st.error("오류가 발생했습니다!")
             st.write("Error details:", str(e))
-            st.markdown(PROFILEGROUP_VIEW_MARKDOWN)

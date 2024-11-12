@@ -19,12 +19,24 @@ class DashLayout:
             Menu.study_group: list(StudyGroup),
             Menu.story_group: list(StoryGroup),
             Menu.profile_group: list(ProfileGroup),
-            Menu.portfolio_group: list(PortfolioGroup),
+            # Menu.portfolio_group: list(PortfolioGroup),
         }
         self.profile_layout = Profile()
         self.portfolio_layout = Portfolio()
         self.study_layout = Study()
         self.story_layout = Story()
+
+        # 스트림릿은 상호작용마다 스크립트를 재실행하기에, 전역으로 둘 수 없음
+        if 'column_state' not in st.session_state:
+            st.session_state.column_state = {'width': 2}
+
+        if 'layout_options' not in st.session_state:
+            st.session_state.layout_options = {
+                'default': [1, 1.5],  # 1:1.5 비율
+                'wide': [1, 3],  # 1:3 비율
+                'balanced': [1, 1],  # 1:1 비율
+                'custom': [2, 3]  # 2:3 비율
+            }
 
         # active_tab 초기화를 먼저 수행
         if 'active_tab' not in st.session_state:
@@ -40,14 +52,77 @@ class DashLayout:
 
     def draw_dashboard(self):
         stime = time.time()
+        # 레이아웃 옵션 설정
+        # if 'layout_options' not in st.session_state:
+        #     st.session_state.layout_options = {
+        #         'default': [1, 1.5],  # 1:1.5 비율
+        #         'wide': [1, 3],  # 1:3 비율
+        #         'balanced': [1, 1],  # 1:1 비율
+        #         'custom': [2, 3]  # 2:3 비율
+        #     }
+        #
+        # # 현재 선택된 레이아웃 상태 관리
+        # if 'current_layout' not in st.session_state:
+        #     st.session_state.current_layout = 'default'
+        #
+        # # 레이아웃 선택 UI
+        # # layout_choice = st.sidebar.selectbox(
+        # layout_choice = st.sidebar.selectbox(
+        #
+        #     "레이아웃 선택",
+        #     options=list(st.session_state.layout_options.keys()),
+        #     index=list(st.session_state.layout_options.keys()).index(st.session_state.current_layout),
+        #     format_func=lambda x: {
+        #         'default': '기본 (1:1.5)',
+        #         'wide': '와이드 (1:3)',
+        #         'balanced': '균형 (1:1)',
+        #         'custom': '커스텀 (2:3)'
+        #     }[x]
+        # )
+        #
+        # # 선택된 레이아웃 적용
+        # st.session_state.current_layout = layout_choice
+
+
         selected = self.draw_sidebar()
         self.update_main_panel(selected=selected)
-
         etime = time.time()
+        # self.side_selector()
         st.markdown(f' Update Time = {timedelta(seconds=etime - stime)}')
 
 
+
+    def side_selector(self):
+        if 'layout_options' not in st.session_state:
+            st.session_state.layout_options = {
+                'default': [1, 1.5],  # 1:1.5 비율
+                'wide': [1, 3],  # 1:3 비율
+                'balanced': [1, 1],  # 1:1 비율
+                'custom': [2, 3]  # 2:3 비율
+            }
+
+        # 현재 선택된 레이아웃 상태 관리
+        if 'current_layout' not in st.session_state:
+            st.session_state.current_layout = 'default'
+
+        # 레이아웃 선택 UI
+        # layout_choice = st.sidebar.selectbox(
+        st.session_state.current_layout = st.sidebar.selectbox(
+
+            "레이아웃 선택",
+            options=list(st.session_state.layout_options.keys()),
+            index=list(st.session_state.layout_options.keys()).index(st.session_state.current_layout),
+            format_func=lambda x: {
+                'default': '기본 (1:1.5)',
+                'wide': '와이드 (1:3)',
+                'balanced': '균형 (1:1)',
+                'custom': '커스텀 (2:3)'
+            }[x]
+        )
+
     def draw_sidebar(self):
+        self.side_selector()
+
         st.sidebar.header("메뉴")
         for menu in Menu:
             with st.sidebar.expander(menu.value, expanded=True):
@@ -56,6 +131,7 @@ class DashLayout:
                         st.session_state.active_tab = submenu.value
                         st.query_params["group"] = menu.value
                         st.query_params["submenu"] = submenu.value
+
         # active_tab이 없을 경우를 대비한 안전장치
         if 'active_tab' not in st.session_state:
             st.session_state.active_tab = ProfileGroup.profile.value
@@ -63,8 +139,24 @@ class DashLayout:
         return st.session_state.active_tab
 
     def update_main_panel(self, selected):
+
         if selected in [item.value for item in ProfileGroup]:
-            self.profile_layout.draw()
+
+            st.markdown(f"{PROFILEGROUP_VIEW_MARKDOWN}")
+            st.write('---')
+
+            # 사이드바의 레이아웃 선택에 의한 화면 분할 사이즈 조정
+            current_layout = st.session_state.get("current_layout", "default")
+            layout_values = st.session_state.layout_options[current_layout]
+            cols = st.columns(layout_values)
+
+
+
+            with cols[0]:
+                self.profile_layout.draw()
+            with cols[1]:
+                self.portfolio_layout.draw()
+
         elif selected in [item.value for item in PortfolioGroup]:
             self.portfolio_layout.navigation()
         elif selected in [item.value for item in StoryGroup]:

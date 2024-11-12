@@ -2,10 +2,10 @@ from enum import Enum
 import os
 
 class Menu(str, Enum):
+    profile_group = 'ProfileGroup'
     study_group = 'StudyGroup'
     story_group = 'StoryGroup'
-    profile_group = 'ProfileGroup'
-    portfolio_group = 'PortfolioGroup'
+    # portfolio_group = 'PortfolioGroup'
 
 class StudyGroup(str, Enum):
     kaggle = 'Kaggle'

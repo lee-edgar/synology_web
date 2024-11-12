@@ -20,7 +20,15 @@ import json
 #     }
 # )
 
+
+
 if __name__ == '__main__':
+    st.set_page_config(
+        page_title="6.5",
+        layout="wide",
+    )
+
+
     current_dir = os.path.dirname(os.path.abspath(__file__))
     css_path = os.path.join(current_dir, 'style', 'style.css')
     # st.image('image/kimparkpenguin.png', use_column_width='auto')
@@ -33,5 +41,5 @@ if __name__ == '__main__':
         response = requests.get(f"{BACKEND_URL}/server_sync")
         dashboard_layout.draw_dashboard()
     except Exception as e:
-        st.error("☠️ backend server is dead ☠️")
+        st.error(f"☠️ something wrong ☠️ {e}")
 
