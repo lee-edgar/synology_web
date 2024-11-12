@@ -5,18 +5,28 @@ from app.common.common import BACKEND_URL
 from app.utils.singleton import  singleton
 from app.layout.const import *
 from streamlit_pdf_viewer import pdf_viewer
+from app.layout.portfolio_channel_layout import Portfolio_Channel_Layout
 
 
 class Portfolio:
 
     def __init__(self):
-        pass
+        self.portfolio_channel_layout = Portfolio_Channel_Layout()
 
-    def draw(self):
+
+    def navigation(self):
         # col1, col2, col3 = st.columns([2, 8, 1])  # 8:2:1 비율
         st.markdown(f"{PORTFOLIO_VIEW_MARKDOWN}")
-        self.draw_portfolio_group_view()
 
+        if st.query_params["submenu"] == CHANNEL_HEALTHCARE_MARKDOWN :
+            self.portfolio_channel_layout.draw()
+        else:
+            self.draw_portfolio_group_view()
+
+
+
+
+        # st.markdown('PortfolioGroup', PortfolioGroup.retinal_oct_disease_classification)
     def draw_portfolio_group_view(self):
         st.image('penguin_mov.gif', use_column_width='auto')
 

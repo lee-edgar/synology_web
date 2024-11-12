@@ -66,7 +66,7 @@ class DashLayout:
         if selected in [item.value for item in ProfileGroup]:
             self.profile_layout.draw()
         elif selected in [item.value for item in PortfolioGroup]:
-            self.portfolio_layout.draw()
+            self.portfolio_layout.navigation()
         elif selected in [item.value for item in StoryGroup]:
             self.story_layout.draw()
         elif selected in [item.value for item in StudyGroup]:

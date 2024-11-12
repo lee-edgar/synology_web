@@ -28,10 +28,13 @@ class ProfileGroup(str, Enum):
     profile = '프로필'
 
 class PortfolioGroup(str, Enum):
-    Portfolio = '포트폴리오'
+    prediction_mushrooms_binaryclassification = '버섯의 독성 분류'
+    channel_healthcare = '채널헬스케어'
+    retinal_oct_disease_classification =  'OCT 기반 안구질환 분류'
 
 PROFILEGROUP_VIEW_MARKDOWN = ' # 프로필 '
 STORYGROUP_VIEW_MARKDOWN = ' # 스토리 '
 STUDYGROUP_VIEW_MARKDOWN = ' # 스터디 '
 PORTFOLIO_VIEW_MARKDOWN = ' # 포트폴리오 '
+CHANNEL_HEALTHCARE_MARKDOWN = '채널헬스케어'
 COMMING_SOON = ' # COMMING SOON'
