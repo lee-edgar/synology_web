@@ -10,7 +10,7 @@ class CGMHistory(Base):
     std_time = Column(DateTime, nullable=False)
     cgm_type = Column(String(50), nullable=False)
     bg = Column(Integer, nullable=False)
-    # id = Column(Integer, primary_key=True, autoincrement=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
     # collector = Column(String(50), nullable=False)
     # device_number = Column(String(100))
     # device_serial = Column(String(100))
