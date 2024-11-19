@@ -11,12 +11,12 @@ class CGMHistory(Base):
     cgm_type = Column(String(50), nullable=False)
     bg = Column(Integer, nullable=False)
     id = Column(Integer, primary_key=True, autoincrement=True)
-    # collector = Column(String(50), nullable=False)
-    # device_number = Column(String(100))
-    # device_serial = Column(String(100))
-    # regist_time = Column(DateTime, nullable=False)
-    # modifier_uid = Column(Integer)
-    # modifiy_time = Column(DateTime, nullable=False)
+    collector = Column(String(50), nullable=False)
+    device_number = Column(String(100))
+    device_serial = Column(String(100))
+    regist_time = Column(DateTime, nullable=False)
+    modifier_uid = Column(Integer)
+    modifiy_time = Column(DateTime, nullable=False)
 
-    def __repr__(self):
-        return f"<CGMHistory(id={self.id}, user_uid={self.user_uid}, std_time={self.std_time})>"
+    # def __repr__(self):
+    #     return f"<CGMHistory(id={self.id}, user_uid={self.user_uid}, std_time={self.std_time})>"
