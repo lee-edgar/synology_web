@@ -12,6 +12,8 @@ class Portfolio:
 
     def __init__(self):
         # self.portfolio_channel_layout = Portfolio_Channel_Layout()
+        self.portfolio_layout = Portfolio_Channel_Layout()
+
         pass
 
     def draw(self):
@@ -47,3 +49,5 @@ class Portfolio:
                 scroll_to_page=3,
                 annotation_outline_size=2
             )
+        with st.expander('channel healthcare', expanded=True):
+            self.portfolio_layout.draw()

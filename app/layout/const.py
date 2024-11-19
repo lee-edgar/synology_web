@@ -26,6 +26,7 @@ class StoryGroup(str, Enum):
 
 class ProfileGroup(str, Enum):
     profile = '프로필'
+    channel_healthcare ='채널헬스케어'
 
 class PortfolioGroup(str, Enum):
     prediction_mushrooms_binaryclassification = '버섯의 독성 분류'
