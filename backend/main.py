@@ -13,7 +13,7 @@ from backend.api.career import router as career_router
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
-from backend.api.cgm import router as cgm_router
+from backend.api.channel_healthcare_api import router as channel_healthcare_router
 
 # 1. FastAPI 애플리케이션 인스턴스 생성
 app = FastAPI(title="Portfolio API")
@@ -28,10 +28,9 @@ app.add_middleware(
 )
 
 # 3. 라우터 등록
-app.include_router(cgm_router,prefix="/api",tags=["CGM"])
+app.include_router(channel_healthcare_router,prefix="/api",tags=["ChannelHealthcare"])
 app.include_router(content_router, prefix="/api")
 app.include_router(career_router, prefix="/api") # career 관련 모든 엔드포인트 설정
-
 
 
 @asynccontextmanager

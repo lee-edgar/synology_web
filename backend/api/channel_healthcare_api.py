@@ -1,0 +1,60 @@
+from datetime import datetime
+from http.client import HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from typing import List
+from backend.db.session import get_db
+from backend.schemas.channel_healthcare_schemas import CGMHistoryBase, CGMHistoryResponse, EXERCISEHistoryResponse, EXERCISEHistoryBase
+from backend.models.channel_healthcare_model import CGMHistory as CGMHistoryModel
+from backend.models.channel_healthcare_model import EXERCISE_History as EXERCISE_HistoryModel
+
+router = APIRouter()
+
+@router.get("/cgm", response_model=List[CGMHistoryResponse], tags=["ChannelHealthcare"])
+def read_cgm(user_uid : int, start_date : datetime, end_date:datetime, db : Session = Depends(get_db)):
+    '''
+    CGM History 정보를 조회하는 엔드포인트
+    user_uid: 사용자 ID
+    start_date: 조회 시작 날짜
+    end_date: 조회 종료 날짜
+    :return:
+        특정 user_uid의 지정된 기간 동안의 연속혈당 데이터
+    '''
+    try:
+        cgm_data = db.query(CGMHistoryModel).filter(
+            CGMHistoryModel.user_uid == user_uid,
+            CGMHistoryModel.std_time.between(start_date, end_date)
+        ).order_by(CGMHistoryModel.std_time).all()
+        if not cgm_data:
+            raise HTTPException(status_code=404, detail='no cgm data found for this user')
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return cgm_data
+
+@router.get("/exercise", response_model=List[EXERCISEHistoryResponse], tags=["ChannelHealthcare"])
+def read_exercise(user_uid : int, start_date : datetime, end_date:datetime, db : Session = Depends(get_db)):
+    '''
+    Exercise History 정보를 조회하는 엔드포인트
+    Args:
+       user_uid: 사용자 ID
+       start_date: 조회 시작 날짜
+       end_date: 조회 종료 날짜
+    :return:
+        특정 user_uid의 지정된 기간 동안의 운동 기록 데이터
+    '''
+
+    try :
+        exercise_data = db.query(EXERCISE_HistoryModel).filter(
+            EXERCISE_HistoryModel.user_uid == user_uid,
+            EXERCISE_HistoryModel.start_time <= end_date,  # 운동 시작 시간이 조회 종료일 이전
+            EXERCISE_HistoryModel.end_time >= start_date   # 운동 종료 시간이 조회 시작일 이후
+        ).order_by(EXERCISE_HistoryModel.start_time).all()
+        if not exercise_data:
+            raise HTTPException(status_code=404, detail="No exercise data found for this user in the given time range")
+        return exercise_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+    return exercise_data
