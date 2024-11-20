@@ -1,7 +1,8 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, Float
+from sqlalchemy import Column, Integer, String, DateTime, Float
 # from backend.db.session import Base
 from sqlalchemy.sql import func
 from backend.models.base import Base
+from sqlalchemy.dialects.mysql import ENUM  # MySQL ENUM 타입 사용
 
 class CGMHistory(Base):
     __tablename__ = "ch_cgm_history"
@@ -47,5 +48,32 @@ class EXERCISE_History(Base):
     consecutive_days = Column(Integer, nullable=False)
 
 
+class MEALS_History(Base):
+    __tablename__ = "ch_meals_history"
 
-
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    meal_id = Column(Integer, nullable=False)
+    user_uid = Column(Integer, nullable=False)
+    meal_div_code = Column(ENUM('BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'), nullable=False)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
+    meal_duration = Column(Integer, nullable=False)
+    bg_point = Column(Integer, nullable=False)
+    bg_point_percent = Column(Integer, nullable=False)
+    top_bg = Column(Integer, nullable=False)
+    top_bg_percent = Column(Integer, nullable=False)
+    vary_bg = Column(Integer, nullable=False)
+    vary_bg_percent = Column(Integer, nullable=False)
+    tir = Column(Integer, nullable=False)
+    tir_percent = Column(Integer, nullable=False)
+    start_bg = Column(Integer, nullable=False)
+    start_bg_percent = Column(Integer, nullable=False)
+    food_info = Column(String(100), nullable=False)
+    meal_desc = Column(String(100), nullable=False)
+    memo = Column(String(100), nullable=False)
+    append_count = Column(Integer, nullable=False)
+    push_alarm = Column(Integer, nullable=False)
+    regist_time = Column(DateTime, nullable=False)
+    modifier_uid = Column(Integer)
+    modify_time = Column(DateTime, nullable=False)
+    pegist_time = Column(String(100))
