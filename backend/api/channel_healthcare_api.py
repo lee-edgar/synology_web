@@ -4,10 +4,11 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from backend.db.session import get_db
-from backend.schemas.channel_healthcare_schemas import CGMHistoryBase, CGMHistoryResponse, EXERCISEHistoryResponse, EXERCISEHistoryBase, MEALHistoryResponse
+from backend.schemas.channel_healthcare_schemas import CGMHistoryBase, CGMHistoryResponse, EXERCISEHistoryResponse, MEDICINEHistoryResponse, MEALHistoryResponse
 from backend.models.channel_healthcare_model import CGMHistory as CGMHistoryModel
 from backend.models.channel_healthcare_model import EXERCISE_History as EXERCISE_HistoryModel
 from backend.models.channel_healthcare_model import MEALS_History as MEAL_HistoryModel
+from backend.models.channel_healthcare_model import MEDICINE_History as MEDICINE_HistoryModel
 
 
 router = APIRouter()
@@ -81,10 +82,42 @@ def read_meal(user_uid : int, start_date : datetime, end_date:datetime, db : Ses
             MEAL_HistoryModel.end_time >= start_date   # 식사 종료 시간이 조회 시작일 이후
         ).order_by(MEAL_HistoryModel.start_time).all()
         if not meal_data:
-            raise HTTPException(status_code=404, detail="No exercise data found for this user in the given time range")
+            raise HTTPException(status_code=404, detail="No meal data found for this user in the given time range")
         return meal_data
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
 
     return meal_data
+
+
+@router.get("/medicine", response_model=List[MEDICINEHistoryResponse], tags=["ChannelHealthcare"])
+def read_meal(user_uid : int, start_time : datetime, db : Session = Depends(get_db)):
+    '''
+    medicine History 정보를 조회하는 엔드포인트
+    Args:
+       user_uid: 사용자 ID
+       start_date: 조회 시작 날짜
+       end_date: 조회 종료 날짜
+    :return:
+        특정 user_uid의 지정된 기간 동안의 복약 기록 데이터
+    '''
+
+    try:
+        # start_time의 날짜 범위 계산
+        start_of_day = datetime.combine(start_time.date(), datetime.min.time())  # 2023-11-01 00:00:00
+        end_of_day = datetime.combine(start_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
+
+        # 데이터 필터링
+        medicine_data = db.query(MEDICINE_HistoryModel).filter(
+            MEDICINE_HistoryModel.user_uid == user_uid,
+            MEDICINE_HistoryModel.regist_time.between(start_of_day, end_of_day)  # 날짜 범위 필터링
+        ).order_by(MEDICINE_HistoryModel.regist_time).all()
+
+        if not medicine_data:
+            raise HTTPException(status_code=404, detail="No medicine data found for this user on the given date")
+
+        return medicine_data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")

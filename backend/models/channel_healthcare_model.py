@@ -77,3 +77,14 @@ class MEALS_History(Base):
     modifier_uid = Column(Integer)
     modify_time = Column(DateTime, nullable=False)
     pegist_time = Column(String(100))
+
+class MEDICINE_History(Base):
+    __tablename__ = "ch_medicine_search_history"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_uid = Column(Integer, nullable=False)
+    name = Column(String(100), nullable=False)
+    regist_time = Column(DateTime, nullable=False)
+    modify_time = Column(DateTime, nullable=False)
+    company = Column(String(100), nullable=False)
+    created_at = Column(DateTime)

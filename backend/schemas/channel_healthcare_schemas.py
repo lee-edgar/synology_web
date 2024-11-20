@@ -82,3 +82,19 @@ class MEALHistoryResponse(MEALHistoryBase):
 
     class Config:
         from_attributes = True
+
+
+class MEDICINEHistoryBase(BaseModel):
+    id : int
+    user_uid : int
+    name : str
+    regist_time : datetime
+    modify_time : datetime
+    company : str
+    created_at : Optional[datetime] = None
+
+class MEDICINEHistoryResponse(MEDICINEHistoryBase):
+    id: int
+
+    class Config:
+        from_attributes = True
