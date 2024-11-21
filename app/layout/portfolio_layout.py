@@ -12,7 +12,6 @@ class Portfolio:
 
     def __init__(self):
         # self.portfolio_channel_layout = Portfolio_Channel_Layout()
-        self.portfolio_layout = Portfolio_Channel_Layout()
 
         pass
 

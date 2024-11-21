@@ -11,7 +11,7 @@ from app.layout.portfolio_layout import Portfolio
 from app.layout.profile_layout import Profile
 from app.layout.study_layout import Study
 from app.layout.story_layout import Story
-
+from app.layout.portfolio_channel_layout import Portfolio_Channel_Layout
 @singleton
 class DashLayout:
     def __init__(self):
@@ -23,6 +23,7 @@ class DashLayout:
         }
         self.profile_layout = Profile()
         self.portfolio_layout = Portfolio()
+        self.channel_healthcare = Portfolio_Channel_Layout()
         self.study_layout = Study()
         self.story_layout = Story()
 
@@ -141,21 +142,23 @@ class DashLayout:
     def update_main_panel(self, selected):
 
         if selected in [item.value for item in ProfileGroup]:
+            if selected == ProfileGroup.profile.value:
 
-            st.markdown(f"{PROFILEGROUP_VIEW_MARKDOWN}")
-            st.write('---')
+                st.markdown(f"{PROFILEGROUP_VIEW_MARKDOWN}")
+                st.write('---')
 
-            # 사이드바의 레이아웃 선택에 의한 화면 분할 사이즈 조정
-            current_layout = st.session_state.get("current_layout", "default")
-            layout_values = st.session_state.layout_options[current_layout]
-            cols = st.columns(layout_values)
+                # 사이드바의 레이아웃 선택에 의한 화면 분할 사이즈 조정
+                current_layout = st.session_state.get("current_layout", "default")
+                layout_values = st.session_state.layout_options[current_layout]
+                cols = st.columns(layout_values)
 
+                with cols[0]:
+                    self.profile_layout.draw()
+                with cols[1]:
+                    self.portfolio_layout.draw()
+            elif selected == ProfileGroup.channel_healthcare.value:
+                self.channel_healthcare.draw()
 
-
-            with cols[0]:
-                self.profile_layout.draw()
-            with cols[1]:
-                self.portfolio_layout.draw()
 
         elif selected in [item.value for item in PortfolioGroup]:
             self.portfolio_layout.navigation()
