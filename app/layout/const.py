@@ -47,3 +47,10 @@ SESSION_USER_UID = 'user_id'
 DEFAULT_START_DATE = '2023-11-01'
 DEFAULT_END_DATE = '2023-11-02'
 DEFAULT_USER_UID = 187
+
+DEFAULT_SESSION_STATE = {
+    'user_uid': 187,
+    'sdate': '2023-11-01',
+    'edate': '2023-11-02'
+}
+

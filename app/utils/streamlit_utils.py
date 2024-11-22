@@ -1,6 +1,6 @@
 import streamlit as st
 from typing import Any,List
-
+from datetime import datetime, date
 from requests.packages import target
 
 
@@ -33,3 +33,27 @@ def get_session_state(key: str) -> Any:
 def reset_session_state(*targets):
     for target in targets:
         update_session_state(target, None)
+
+def initialize_session_state(defaults: dict):
+    # 항상 디폴트 옵션을 주어, 새로고침 시 session out됨을 방지함.
+    initialized_state = {}
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+            initialized_state[key] = value
+        else:
+            initialized_state[key] = st.session_state[key]
+    return initialized_state
+
+
+
+def str2datetime(date:str) -> datetime:
+    '''
+    문자열 또는 datetime 객체를 받아 datetime 객체를 반환하는 함수.
+    Returns:
+        datetime: 입력 값이 문자열일 경우 datetime 객체로 변환된 값,
+                  datetime 객체일 경우 그대로 반환.
+    '''
+    if isinstance(date, datetime):
+        return date
+    return datetime.fromisoformat(date)

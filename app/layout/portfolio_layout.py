@@ -48,5 +48,5 @@ class Portfolio:
                 scroll_to_page=3,
                 annotation_outline_size=2
             )
-        with st.expander('channel healthcare', expanded=True):
-            self.portfolio_layout.draw()
+        # with st.expander('channel healthcare', expanded=True):
+        #     self.portfolio_layout.draw()

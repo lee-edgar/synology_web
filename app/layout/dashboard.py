@@ -157,7 +157,8 @@ class DashLayout:
                 with cols[1]:
                     self.portfolio_layout.draw()
             elif selected == ProfileGroup.channel_healthcare.value:
-                self.channel_healthcare.draw()
+                st.write(f"Debug: Calling channel_healthcare.draw() with selected={selected}")
+                self.channel_healthcare.initialize_session_render()
 
 
         elif selected in [item.value for item in PortfolioGroup]:
