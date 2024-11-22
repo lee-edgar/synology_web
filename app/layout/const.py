@@ -50,7 +50,6 @@ DEFAULT_USER_UID = 187
 
 DEFAULT_SESSION_STATE = {
     'user_uid': 187,
-    'sdate': '2023-11-01',
-    'edate': '2023-11-02'
+    'sdate': '2023-11-01T00:00:00',  # 시작 날짜: 자정
+    'edate': '2023-11-02T23:59:59'   # 종료 날짜: 하루의 마지막 시간
 }
-
