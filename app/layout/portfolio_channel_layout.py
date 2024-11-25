@@ -42,6 +42,7 @@ class Portfolio_Channel_Layout():
 
         self.get_cgm(user_uid, sdate, edate)
         self.get_exercise(user_uid, sdate, edate)
+        self.get_meal(user_uid, sdate, edate)
 
     def get_cgm(self, user_uid, sdate, edate):
         cgm_df = channel_healthcare_info_session.get_cgm_data(user_uid, sdate, edate)
@@ -50,3 +51,8 @@ class Portfolio_Channel_Layout():
     def get_exercise(self, user_uid, sdate, edate):
         exercise_df = channel_healthcare_info_session.get_exercise_data(user_uid, sdate, edate)
         st.write(exercise_df)
+
+    def get_meal(self, user_uid, sdate, edate):
+        meal_df = channel_healthcare_info_session.get_meal_data(user_uid, sdate, edate)
+        st.write(meal_df)
+

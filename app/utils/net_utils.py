@@ -1,8 +1,11 @@
+from http.client import responses
+
 import requests
 import json
 from datetime import datetime
 from app.common.common import GET_CGM, GET_EXERCISE, GET_MEAL, GET_MEDICINE
 from typing import Optional
+
 from loguru import logger
 import streamlit as st
 
@@ -22,7 +25,7 @@ class NetUtil:
         logger.info("NetUtil initialized")
 
 
-    def get_cgm(self, user_uid: int, start_time: datetime, end_time: datetime):
+    def get_cgm(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
         params = {
             "user_uid": user_uid,
             "start_date": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -38,7 +41,7 @@ class NetUtil:
 
         return response
 
-    def get_exercise(self, user_uid: int, start_time: datetime, end_time: datetime):
+    def get_exercise(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
         params = {
             "user_uid": user_uid,
             "start_date": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
@@ -53,18 +56,22 @@ class NetUtil:
             return None
 
         return response
-    # def get_exercise(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
-    #     """
-    #     Fetch exercise history for a given user and time range.
-    #     """
-    #     payload = {
-    #         "fromTime": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
-    #         "toTime": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-    #         "query_type": "user_uid",
-    #         "key": f"{user_uid}"
-    #     }
-    #     return self._make_request(GET_EXERCISE, payload)
-    #
+
+    def get_meal(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
+        params = {
+            "user_uid": user_uid,
+            "start_date": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_date": end_time.strftime("%Y-%m-%dT%H:%M:%S")
+        }
+        url = f'{GET_MEAL}'
+        response = requests.get(url=url, params=params)  # GET 요청으로 변경
+
+        if response.status_code != 200:
+            logger.error(f"Failed to get meal info with user uid:{user_uid}. status_code: {response.status_code}")
+            return None
+
+        return response
+
     # def get_meal(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
     #     """
     #     Fetch meal history for a given user and time range.

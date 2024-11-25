@@ -18,6 +18,10 @@ class ChannelHealthcareInfo:
         exercise_info = data_agent.get_exercise(user_uid, sdate, edate)
         return pd.DataFrame(exercise_info)
 
+    def get_meal_data(self, user_uid, sdate, edate):
+        meal_info = data_agent.get_meal(user_uid, sdate, edate)
+        return pd.DataFrame(meal_info)
+
 
 
 
