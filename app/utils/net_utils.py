@@ -38,6 +38,21 @@ class NetUtil:
 
         return response
 
+    def get_exercise(self, user_uid: int, start_time: datetime, end_time: datetime):
+        params = {
+            "user_uid": user_uid,
+            "start_date": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "end_date": end_time.strftime("%Y-%m-%dT%H:%M:%S")
+        }
+        url = f'{GET_EXERCISE}'
+
+        response = requests.get(url=url, params=params)  # GET 요청으로 변경
+
+        if response.status_code != 200:
+            logger.error(f"Failed to get exercise info with user uid:{user_uid}. status_code: {response.status_code}")
+            return None
+
+        return response
     # def get_exercise(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
     #     """
     #     Fetch exercise history for a given user and time range.
