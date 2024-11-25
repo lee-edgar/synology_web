@@ -23,8 +23,6 @@ class NetUtil:
 
 
     def get_cgm(self, user_uid: int, start_time: datetime, end_time: datetime):
-        st.write('net utils area', user_uid, start_time, end_time)
-
         params = {
             "user_uid": user_uid,
             "start_date": start_time.strftime("%Y-%m-%dT%H:%M:%S"),

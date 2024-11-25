@@ -15,15 +15,16 @@ class DataAgent:
     def get_cgm(self, user_uid, sdate, edate):
         cgm_list = []
         cgm_info = data_manager.get_cgm(user_uid, sdate, edate)
-
-        if cgm_info is None:
+        
+        if cgm_info is not None:
+            cgm_list.extend(cgm_info)
+        elif cgm_info is None:
             cgm = self.update_cgm(user_uid, sdate, edate)
             if cgm is not None:
                 cgm_list.extend(cgm)
         return cgm_list
 
     def update_cgm(self, user_uid:int, sdate:date, edate:date):
-        st.write('run update_cgm')
         response = net_util.get_cgm(user_uid, sdate, edate)
         if response is None:
             return None

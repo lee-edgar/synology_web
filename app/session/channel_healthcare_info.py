@@ -12,7 +12,6 @@ class ChannelHealthcareInfo:
 
     def get_cgm_date(self, user_uid, sdate, edate):
         cgm_info = data_agent.get_cgm(user_uid, sdate, edate)
-        st.write('session info', cgm_info)
-        df = pd.DataFrame(cgm_info)
-        st.write(df)
+        return pd.DataFrame(cgm_info)
+
 channel_healthcare_info_session: ChannelHealthcareInfo = ChannelHealthcareInfo()

@@ -43,5 +43,5 @@ class Portfolio_Channel_Layout():
         self.get_cgm(user_uid, sdate, edate)
 
     def get_cgm(self, user_uid, sdate, edate):
-        channel_healthcare_info_session.get_cgm_date(user_uid, sdate, edate)
-
+        cgm_df = channel_healthcare_info_session.get_cgm_date(user_uid, sdate, edate)
+        st.write(cgm_df)
