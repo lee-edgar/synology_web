@@ -87,3 +87,66 @@ class NetUtil:
 
         url = f"{GET_CGM}"
         return self._make_request("GET", url, params=params)
+
+
+
+class DataManager:
+
+    """
+    DataManager 클래스
+    ------------------
+    사용자별 데이터(CGM, 운동, 식사 등)를 관리하기 위한 클래스입니다.
+
+    update_* 메서드에서 동일한 패턴이 반복되고 있습니다.
+    이를 공통적으로 처리할 수 있는 `_update_dict` 메서드를 활용하여 간소화하였습니다.
+    아래 `_update_dict` 메서드를 통해 데이터 딕셔너리 업데이트 로직을 통합적으로 관리할 수 있습니다.
+    """
+
+
+    from typing import Dict, Any, Optional
+    from datetime import datetime, date
+    def __init__(self):
+        self.cgm_dict = {}
+        self.exercise_dict = {}
+        self.meal_dict = {}
+
+    def get_meal(self, user_uid: int, sdate: date, edate: date) -> Optional[Dict[str, Any]]:
+        meal_info: dict = self.meal_dict.get(user_uid)
+        if meal_info is None:
+            return None
+        return meal_info
+
+    def update_meal(self, user_uid: int, useful_data: date, meal_json_data: Dict[str, Any]) -> None:
+        meal_info = self.meal_dict.get(user_uid)
+        if meal_info is not None:
+            meal_info[user_uid] = meal_json_data
+        else:
+            self.meal_dict[user_uid] = meal_json_data
+
+
+
+    def _update_dict(data_dict: Dict[int, Dict[str, Any]], user_uid: int, json_data: Dict[str, Any]) -> None:
+        """
+        특정 사용자의 데이터를 딕셔너리에 업데이트하거나 추가합니다.
+
+        Args:
+            data_dict (Dict[int, Dict[str, Any]]): 사용자 데이터를 저장하는 딕셔너리.
+            user_uid (int): 사용자 고유 ID.
+            json_data (Dict[str, Any]): 업데이트할 JSON 데이터.
+
+        Returns:
+            None
+        """
+        if user_uid in data_dict:
+            data_dict[user_uid] = json_data
+        else:
+            data_dict[user_uid] = json_data
+
+    def update_cgm(self, user_uid: int, useful_data: date, cgm_json_data: Dict[str, Any]) -> None:
+        self._update_dict(self.cgm_dict, user_uid, cgm_json_data)
+
+    def update_exercise(self, user_uid: int, useful_data: date, exercise_json_data: Dict[str, Any]) -> None:
+        self._update_dict(self.exercise_dict, user_uid, exercise_json_data)
+
+    def update_meal(self, user_uid: int, useful_data: date, meal_json_data: Dict[str, Any]) -> None:
+        self._update_dict(self.meal_dict, user_uid, meal_json_data)
