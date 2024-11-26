@@ -54,6 +54,14 @@ DEFAULT_START_DATE = '2023-11-01'
 DEFAULT_END_DATE = '2023-11-02'
 DEFAULT_USER_UID = 187
 
+
+MSG_NO_CGM_DATA = '연속혈당 정보가 없습니다. :sunglasses:'
+MSG_NO_EXERCISE_DATA = '운동 정보가 없습니다. :sunglasses:'
+MSG_NO_TAKE_MEDICINE_DATA = '약물 정보가 없습니다. :sunglasses:'
+MSG_NO_MEDICATION_DATA = '복약 정보가 없습니다. :sunglasses:'
+X_AXIS_DTICK_VALUES = { 0: 3600 * 1000, 1: 7200 * 1000, 3: 14400 * 1000, 7: 43200 * 1000 }
+
+
 DEFAULT_SESSION_STATE = {
     'user_uid': 187,
     'sdate': '2023-11-01T00:00:00',  # 시작 날짜: 자정
