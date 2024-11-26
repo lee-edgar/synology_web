@@ -17,17 +17,16 @@ class DataAgent:
     def get_cgm(self, user_uid: int, sdate: date, edate: date) -> Optional[dict]:
         cgm_list = []
         cgm_info = data_manager.get_cgm(user_uid, sdate, edate)
-        
+
         if cgm_info is not None:
             cgm_list.extend(cgm_info)
-            st.success('업데이트 된 세션에서 로드')
-
+            st.session_state.data_call_session = '업데이트 된 세션에서 로드'
         elif cgm_info is None:
             cgm = self.update_cgm(user_uid, sdate, edate)
-            st.success('세션 업데이트 후 로드')
-
+            st.session_state.data_call_session = '세션 업데이트 후 로드'
             if cgm is not None:
                 cgm_list.extend(cgm)
+
         return cgm_list
 
     def update_cgm(self, user_uid:int, sdate:date, edate:date) -> Optional[dict]:
@@ -47,11 +46,9 @@ class DataAgent:
 
         if exercise_info is not None:
             exercise_list.extend(exercise_info)
-            st.success('업데이트 된 세션에서 로드')
 
         elif exercise_info is None:
             exercise = self.update_exercise(user_uid, sdate, edate)
-            st.success('세션 업데이트 후 로드')
 
             if exercise is not None:
                 exercise_list.extend(exercise)
@@ -76,11 +73,9 @@ class DataAgent:
 
         if meal_info is not None:
             meal_list.extend(meal_info)
-            st.success('업데이트 된 세션에서 로드')
 
         elif meal_info is None:
             meal = self.update_meal(user_uid, sdate, edate)
-            st.success('세션 업데이트 후 로드')
 
             if meal is not None:
                 meal_list.extend(meal)
@@ -103,11 +98,9 @@ class DataAgent:
         medicine_info = data_manager.get_medicine(user_uid, sdate)
         if medicine_info is not None:
             medicine_list.extend(medicine_info)
-            st.success('업데이트 된 세션에서 로드')
 
         elif medicine_info is None:
             medicine = self.update_medicine(user_uid, sdate)
-            st.success('세션 업데이트 후 로드')
 
             if medicine is not None:
                 medicine_list.extend(medicine)

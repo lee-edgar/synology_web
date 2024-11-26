@@ -34,31 +34,45 @@ class Portfolio_Channel_Layout():
         initialize_session_state(DEFAULT_SESSION_STATE)
 
         self.draw_graph()
+        self.draw_table()
 
     def draw_graph(self):
         user_uid = st.session_state['user_uid']
         sdate = str2datetime(st.session_state['sdate'])
         edate = str2datetime(st.session_state['edate'])
 
+
         self.get_cgm(user_uid, sdate, edate)
         self.get_exercise(user_uid, sdate, edate)
         self.get_meal(user_uid, sdate, edate)
         self.get_medicine(user_uid, sdate)
 
+    def draw_table(self):
+        mode = st.radio('회원 정보 탭', [item.value for item in TableView],
+                        horizontal=True, label_visibility='collapsed')
+        st.info(st.session_state.data_call_session)
+        if mode == TableView.cgm:
+            st.dataframe(self.get_cgm(st.session_state['user_uid'],  str2datetime(st.session_state['sdate']), str2datetime(st.session_state['edate'])))
+
+        elif mode == TableView.meal:
+            st.dataframe(self.get_exercise(st.session_state['user_uid'], str2datetime(st.session_state['sdate']), str2datetime(st.session_state['edate'])))
+
+        elif mode == TableView.exercise:
+            st.dataframe(self.get_meal(st.session_state['user_uid'], str2datetime(st.session_state['sdate']),str2datetime(st.session_state['edate'])))
+
+        elif mode == TableView.medicine:
+            st.dataframe(self.get_medicine(st.session_state['user_uid'],  str2datetime(st.session_state['sdate'])))
+
     def get_cgm(self, user_uid: int, sdate: date, edate:date):
-        cgm_df = channel_healthcare_info_session.get_cgm_data(user_uid, sdate, edate)
-        st.write(cgm_df)
+        return channel_healthcare_info_session.get_cgm_data(user_uid, sdate, edate)
 
     def get_exercise(self, user_uid: int, sdate: date, edate:date):
-        exercise_df = channel_healthcare_info_session.get_exercise_data(user_uid, sdate, edate)
-        st.write(exercise_df)
+        return channel_healthcare_info_session.get_exercise_data(user_uid, sdate, edate)
 
     def get_meal(self, user_uid: int, sdate: date, edate:date):
-        meal_df = channel_healthcare_info_session.get_meal_data(user_uid, sdate, edate)
-        st.write(meal_df)
+        return channel_healthcare_info_session.get_meal_data(user_uid, sdate, edate)
 
     def get_medicine(self, user_uid: int, sdate: date):
-        medicine_df = channel_healthcare_info_session.get_medicine_data(user_uid, sdate)
-        st.write(medicine_df)
+        return channel_healthcare_info_session.get_medicine_data(user_uid, sdate)
 
 

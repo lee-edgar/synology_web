@@ -33,6 +33,12 @@ class PortfolioGroup(str, Enum):
     channel_healthcare = '채널헬스케어'
     retinal_oct_disease_classification =  'OCT 기반 안구질환 분류'
 
+class TableView(str, Enum):
+    cgm = '연속기록'
+    meal = '식사기록'
+    exercise = '운동기록'
+    medicine = '약물기록'
+
 PROFILEGROUP_VIEW_MARKDOWN = ' # 프로필 '
 STORYGROUP_VIEW_MARKDOWN = ' # 스토리 '
 STUDYGROUP_VIEW_MARKDOWN = ' # 스터디 '
@@ -51,5 +57,6 @@ DEFAULT_USER_UID = 187
 DEFAULT_SESSION_STATE = {
     'user_uid': 187,
     'sdate': '2023-11-01T00:00:00',  # 시작 날짜: 자정
-    'edate': '2023-11-02T23:59:59'   # 종료 날짜: 하루의 마지막 시간
+    'edate': '2023-11-02T23:59:59',   # 종료 날짜: 하루의 마지막 시간
+    'data_call_session': None
 }
