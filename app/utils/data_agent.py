@@ -98,6 +98,33 @@ class DataAgent:
         data_manager.update_meal(user_uid, sdate, meal_json_data)
         return meal_json_data
 
+    def get_medicine(self, user_uid: int, sdate: date) -> Optional[dict]:
+        medicine_list = []
+        medicine_info = data_manager.get_medicine(user_uid, sdate)
+        if medicine_info is not None:
+            medicine_list.extend(medicine_info)
+            st.success('업데이트 된 세션에서 로드')
+
+        elif medicine_info is None:
+            medicine = self.update_medicine(user_uid, sdate)
+            st.success('세션 업데이트 후 로드')
+
+            if medicine is not None:
+                medicine_list.extend(medicine)
+
+        return medicine_list
+
+    def update_medicine(self, user_uid: int, sdate: date) -> Optional[dict]:
+        response = net_util.get_medicine(user_uid, sdate )
+        if response is None:
+            return None
+
+        medicine_json_data = response.json()
+        if medicine_json_data is None:
+            return None
+        data_manager.update_medicine(user_uid, sdate, medicine_json_data)
+        return medicine_json_data
+
 
 
 data_agent:DataAgent = DataAgent()

@@ -92,7 +92,7 @@ def read_meal(user_uid : int, start_date : datetime, end_date:datetime, db : Ses
 
 
 @router.get("/medicine", response_model=List[MEDICINEHistoryResponse], tags=["ChannelHealthcare"])
-def read_meal(user_uid : int, start_time : datetime, db : Session = Depends(get_db)):
+def read_medicine(user_uid : int, regist_time : datetime, db : Session = Depends(get_db)):
     '''
     medicine History 정보를 조회하는 엔드포인트
     Args:
@@ -105,14 +105,25 @@ def read_meal(user_uid : int, start_time : datetime, db : Session = Depends(get_
 
     try:
         # start_time의 날짜 범위 계산
-        start_of_day = datetime.combine(start_time.date(), datetime.min.time())  # 2023-11-01 00:00:00
-        end_of_day = datetime.combine(start_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
+        # start_of_day = datetime.combine(start_date.date(), datetime.min.time())  # 2023-11-01 00:00:00
+        # end_of_day = datetime.combine(start_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
+        end_date = datetime.combine(regist_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
 
         # 데이터 필터링
+        # medicine_data = db.query(MEDICINE_HistoryModel).filter(
+        #     MEDICINE_HistoryModel.user_uid == user_uid,
+        #     MEDICINE_HistoryModel.regist_time.between(start_of_day, end_of_day)  # 날짜 범위 필터링
+        # ).order_by(MEDICINE_HistoryModel.regist_time).all()
+
         medicine_data = db.query(MEDICINE_HistoryModel).filter(
-            MEDICINE_HistoryModel.user_uid == user_uid,
-            MEDICINE_HistoryModel.regist_time.between(start_of_day, end_of_day)  # 날짜 범위 필터링
+            MEDICINE_HistoryModel.user_uid == user_uid
         ).order_by(MEDICINE_HistoryModel.regist_time).all()
+
+        # medicine_data = db.query(MEDICINE_HistoryModel).filter(
+        #     MEDICINE_HistoryModel.user_uid == user_uid,
+        #     MEDICINE_HistoryModel.regist_time <= end_date,  # 식사 시작 시간이 조회 종료일 이전
+        #     MEDICINE_HistoryModel.end_date >= regist_time   # 식사 종료 시간이 조회 시작일 이후
+        # ).order_by(MEDICINE_HistoryModel.regist_time).all()
 
         if not medicine_data:
             raise HTTPException(status_code=404, detail="No medicine data found for this user on the given date")
@@ -121,3 +132,5 @@ def read_meal(user_uid : int, start_time : datetime, db : Session = Depends(get_
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+
+    return medicine_data

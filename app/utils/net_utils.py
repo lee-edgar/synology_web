@@ -83,7 +83,21 @@ class NetUtil:
     #         "key": f"{user_uid}"
     #     }
     #     return self._make_request(GET_MEAL, payload)
-    #
+
+    def get_medicine(self, user_uid: int, regist_time: datetime) -> Optional[dict]:
+        params = {
+            "user_uid": user_uid,
+            "regist_time": regist_time.strftime("%Y-%m-%dT%H:%M:%S"),
+        }
+        url = f'{GET_MEDICINE}'
+        response = requests.get(url=url, params=params)  # GET 요청으로 변경
+
+        if response.status_code != 200:
+            logger.error(f"Failed to get medicine info with user uid:{user_uid}. status_code: {response.status_code}")
+            return None
+
+        return response
+
     # def get_medicine(self, user_uid: int, start_time: datetime) -> Optional[dict]:
     #     """
     #     Fetch medicine history for a given user on a specific date.
