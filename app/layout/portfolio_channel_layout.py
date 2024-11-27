@@ -36,6 +36,7 @@ class Portfolio_Channel_Layout():
         initialize_session_state(DEFAULT_SESSION_STATE)
 
         self.draw_graph()
+        self.draw_sub_graph()
         self.draw_table()
 
     def draw_graph(self):
@@ -46,13 +47,32 @@ class Portfolio_Channel_Layout():
 
         # self.get_cgm(user_uid, sdate, edate)
         # self.get_exercise(user_uid, sdate, edate)
-        self.get_meal(user_uid, sdate, edate)
+        # self.get_meal(user_uid, sdate, edate)
         self.get_medicine(user_uid, sdate)
 
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
         self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_meal(fig, user_uid, sdate, edate)
+
         st.plotly_chart(fig , use_container_width=True)
+
+    def draw_sub_graph(self):
+        user_uid = st.session_state['user_uid']
+        sdate = str2datetime(st.session_state['sdate'])
+        edate = str2datetime(st.session_state['edate'])
+
+        # self.get_cgm(user_uid, sdate, edate)
+        # self.get_exercise(user_uid, sdate, edate)
+        # self.get_meal(user_uid, sdate, edate)
+        # self.get_medicine(user_uid, sdate)
+
+        fig = go.Figure()
+        self.plot_cgm(fig, user_uid, sdate, edate)
+        # self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_meal_zone(fig, user_uid, sdate, edate)
+
+        st.plotly_chart(fig, use_container_width=True)
 
 
     def draw_table(self):
@@ -63,10 +83,10 @@ class Portfolio_Channel_Layout():
             st.dataframe(self.get_cgm(st.session_state['user_uid'],  str2datetime(st.session_state['sdate']), str2datetime(st.session_state['edate'])))
 
         elif mode == TableView.meal:
-            st.dataframe(self.get_exercise(st.session_state['user_uid'], str2datetime(st.session_state['sdate']), str2datetime(st.session_state['edate'])))
+            st.dataframe(self.get_meal(st.session_state['user_uid'], str2datetime(st.session_state['sdate']), str2datetime(st.session_state['edate'])))
 
         elif mode == TableView.exercise:
-            st.dataframe(self.get_meal(st.session_state['user_uid'], str2datetime(st.session_state['sdate']),str2datetime(st.session_state['edate'])))
+            st.dataframe(self.get_exercise(st.session_state['user_uid'], str2datetime(st.session_state['sdate']),str2datetime(st.session_state['edate'])))
 
         elif mode == TableView.medicine:
             st.dataframe(self.get_medicine(st.session_state['user_uid'],  str2datetime(st.session_state['sdate'])))
@@ -118,11 +138,84 @@ class Portfolio_Channel_Layout():
                           annotation_position='top left', annotation_text="운동")
 
 
+    def plot_meal(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+        df = self.get_meal(user_uid, sdate, edate)
+        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+
+        if df is None or df.empty:
+            return None
+
+        for index, row in df.iterrows():
+            start_time_dt = pd.to_datetime(row['start_time'])
+            end_time_dt = pd.to_datetime(row['end_time'])
+            midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
+            # meal_zone_time = start_time_dt + timedelta(hours=4)  # 4시간 더하기
+
+            # meal_zone_time이 edate를 초과하면 제외
+            if end_time_dt.date() > edate.date():
+                continue
+
+            start_time = str(row['start_time'])
+            end_time = str(row['end_time'])
+            meal_div_code = str(row['meal_div_code'])
+            top_bg = str(row['top_bg'])
+            tir = str(row['tir'])
+
+            fig.add_vrect(
+                x0=start_time,
+                x1=end_time,
+                fillcolor='rgba(255, 0, 0, 0.2)',
+                line_width=0.3,
+                annotation_position='bottom left',
+                annotation_text=meal_div_code
+            )
 
 
 
+    def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+        df = self.get_meal(user_uid, sdate, edate)
+        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
 
+        if df is None or df.empty:
+            return None
 
+        for index, row in df.iterrows():
+            start_time_dt = pd.to_datetime(row['start_time'])
+            end_time_dt = pd.to_datetime(row['end_time'])
+            midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
+            meal_zone_time = start_time_dt + timedelta(hours=4)  # 4시간 더하기
+
+            # meal_zone_time이 edate를 초과하면 제외
+            if meal_zone_time.date() > edate.date():
+                continue
+
+            start_time = str(row['start_time'])
+            end_time = str(row['end_time'])
+            meal_div_code = str(row['meal_div_code'])
+            top_bg = str(row['top_bg'])
+            tir = str(row['tir'])
+
+            fig.add_vrect(
+                x0=start_time,
+                x1=meal_zone_time,
+                fillcolor='rgba(255, 0, 0, 0.2)',
+                line_width=0.3,
+            )
+
+            fig.add_trace(go.Scatter(
+                x=[start_time_dt],  # 중간값에 마커 추가
+                y=[1],  # 고정된 Y 값
+                mode='markers+text',
+                marker=dict(size=20, color='black', symbol='circle'),  # 검은색 마커
+                text=[f"{meal_div_code}<br>"
+                      f"Start: {start_time}<br>"
+                      f"End: {end_time}<br>"
+                      f"TOP_BG: {top_bg}<br>"
+                      f"TIR: {tir}<br>"],
+                textposition="top center",  # 텍스트 위치 설정
+                hoverinfo='text',
+                name='Meal Info'
+            ))
 
 
     def get_cgm(self, user_uid: int, sdate: date, edate:date):
