@@ -45,12 +45,13 @@ class Portfolio_Channel_Layout():
 
 
         # self.get_cgm(user_uid, sdate, edate)
-        self.get_exercise(user_uid, sdate, edate)
+        # self.get_exercise(user_uid, sdate, edate)
         self.get_meal(user_uid, sdate, edate)
         self.get_medicine(user_uid, sdate)
 
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
+        self.plot_exercise(fig, user_uid, sdate, edate)
         st.plotly_chart(fig , use_container_width=True)
 
 
@@ -102,6 +103,19 @@ class Portfolio_Channel_Layout():
             xaxis=dict(tickangle=0, automargin=True, dtick=x_axis_dtick, tickformat='%H시<br>%m-%d', hoverformat='%H:%M<br>%y-%m-%d'),
             hovermode='x unified', showlegend=False)
         fig.update_layout(yaxis=dict(range=y_axis_range), xaxis=dict(dtick=x_axis_dtick))
+
+    def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
+        df = self.get_exercise(user_uid, sdate, edate)
+        df = df[['start_time', 'end_time']]
+
+        if df is None:
+            return None
+
+        for index, row in df.iterrows():
+            ex_start = str(row['start_time'])
+            ex_end = str(row['end_time'])
+            fig.add_vrect(x0=ex_start, x1=ex_end, fillcolor='rgba(0, 255, 100, 0.5)', line_width=0.3,
+                          annotation_position='top left', annotation_text="운동")
 
 
 
