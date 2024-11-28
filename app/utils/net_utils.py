@@ -49,13 +49,36 @@ class NetUtil:
         }
         url = f'{GET_EXERCISE}'
 
-        response = requests.get(url=url, params=params)  # GET 요청으로 변경
+        try:
+            response = requests.get(url=url, params=params)  # GET 요청
+            if response.status_code == 200:
+                # JSON 파싱 시도
+                try:
+                    return response.json()
+                except Exception as e:
+                    logger.error(f"Error parsing JSON response: {e}")
+                    st.error(f"데이터를 처리하는 중 문제가 발생했습니다. (JSON 오류)")
+                    return None
 
-        if response.status_code != 200:
-            logger.error(f"Failed to get exercise info with user uid:{user_uid}. status_code: {response.status_code}")
+            elif response.status_code == 404:
+                st.warning(f"운동 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
+                logger.info(f"No exercise data found for user_uid {user_uid}. URL: {url}")
+                return None
+
+            elif response.status_code == 500:
+                st.error(f"서버 내부 오류로 데이터를 가져올 수 없습니다. (user_uid: {user_uid})")
+                logger.error(f"500 Error: Internal server issue for {user_uid}. URL: {url}")
+                return None
+
+            else:
+                st.warning(f"예상치 못한 응답 코드: {response.status_code}")
+                logger.warning(f"Unexpected response: {response.status_code} for {user_uid}. URL: {url}")
+                return None
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"HTTP 요청 중 오류 발생: {e}")
+            st.error(f"데이터를 가져오는 중 네트워크 문제가 발생했습니다.")
             return None
-
-        return response
 
     def get_meal(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
         params = {

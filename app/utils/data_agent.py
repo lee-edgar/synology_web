@@ -43,7 +43,6 @@ class DataAgent:
     def get_exercise(self, user_uid: int, sdate: date, edate: date) -> Optional[dict]:
         exercise_list = []
         exercise_info = data_manager.get_exercise(user_uid, sdate, edate)
-
         if exercise_info is not None:
             exercise_list.extend(exercise_info)
 
@@ -52,6 +51,8 @@ class DataAgent:
 
             if exercise is not None:
                 exercise_list.extend(exercise)
+            else:
+                return None
 
         return exercise_list
 

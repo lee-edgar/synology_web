@@ -75,7 +75,7 @@ class MEALHistoryBase(BaseModel):
     regist_time : datetime
     modifier_uid : Optional[str] = None
     modify_time : datetime
-    pegist_time : Optional[str] = None
+    # pegist_time : Optional[str] = None
 
 class MEALHistoryResponse(MEALHistoryBase):
     id: int

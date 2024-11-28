@@ -17,6 +17,8 @@ class ChannelHealthcareInfo:
 
     def get_exercise_data(self, user_uid: int, sdate: date, edate:date):
         exercise_info = data_agent.get_exercise(user_uid, sdate, edate)
+        if exercise_info is None:
+            return None
         return pd.DataFrame(exercise_info)
 
     def get_meal_data(self, user_uid: int, sdate: date, edate: date):

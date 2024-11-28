@@ -53,38 +53,6 @@ class DashLayout:
 
     def draw_dashboard(self):
         stime = time.time()
-        # 레이아웃 옵션 설정
-        # if 'layout_options' not in st.session_state:
-        #     st.session_state.layout_options = {
-        #         'default': [1, 1.5],  # 1:1.5 비율
-        #         'wide': [1, 3],  # 1:3 비율
-        #         'balanced': [1, 1],  # 1:1 비율
-        #         'custom': [2, 3]  # 2:3 비율
-        #     }
-        #
-        # # 현재 선택된 레이아웃 상태 관리
-        # if 'current_layout' not in st.session_state:
-        #     st.session_state.current_layout = 'default'
-        #
-        # # 레이아웃 선택 UI
-        # # layout_choice = st.sidebar.selectbox(
-        # layout_choice = st.sidebar.selectbox(
-        #
-        #     "레이아웃 선택",
-        #     options=list(st.session_state.layout_options.keys()),
-        #     index=list(st.session_state.layout_options.keys()).index(st.session_state.current_layout),
-        #     format_func=lambda x: {
-        #         'default': '기본 (1:1.5)',
-        #         'wide': '와이드 (1:3)',
-        #         'balanced': '균형 (1:1)',
-        #         'custom': '커스텀 (2:3)'
-        #     }[x]
-        # )
-        #
-        # # 선택된 레이아웃 적용
-        # st.session_state.current_layout = layout_choice
-
-
         selected = self.draw_sidebar()
         self.update_main_panel(selected=selected)
         etime = time.time()

@@ -76,7 +76,7 @@ class MEALS_History(Base):
     regist_time = Column(DateTime, nullable=False)
     modifier_uid = Column(Integer)
     modify_time = Column(DateTime, nullable=False)
-    pegist_time = Column(String(100))
+    # pegist_time = Column(String(100))
 
 class MEDICINE_History(Base):
     __tablename__ = "ch_medicine_search_history"

@@ -14,16 +14,7 @@ import pandas as pd
 
 class Portfolio_Channel_Layout():
     def __init__(self):
-
         pass
-
-    # def update_date(self):
-    #     sdate = '2023-11-01'
-    #     edate = '2023-11-03'
-    #     self.update_ch_data(sdate, edate)
-    #
-    # def update_ch_data(self, start_date : date, end_date:date):
-    #     self.update_cgm(start_date, end_date)
 
     def initialize_session_render(self):
         '''
@@ -48,7 +39,8 @@ class Portfolio_Channel_Layout():
         # self.get_cgm(user_uid, sdate, edate)
         # self.get_exercise(user_uid, sdate, edate)
         # self.get_meal(user_uid, sdate, edate)
-        self.get_medicine(user_uid, sdate)
+
+        # self.get_medicine(user_uid, sdate)
 
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
@@ -69,7 +61,7 @@ class Portfolio_Channel_Layout():
 
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
-        # self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal_zone(fig, user_uid, sdate, edate)
 
         st.plotly_chart(fig, use_container_width=True)
@@ -86,7 +78,12 @@ class Portfolio_Channel_Layout():
             st.dataframe(self.get_meal(st.session_state['user_uid'], str2datetime(st.session_state['sdate']), str2datetime(st.session_state['edate'])))
 
         elif mode == TableView.exercise:
-            st.dataframe(self.get_exercise(st.session_state['user_uid'], str2datetime(st.session_state['sdate']),str2datetime(st.session_state['edate'])))
+            get_exercise = self.get_exercise(st.session_state['user_uid'],
+                              str2datetime(st.session_state['sdate']),
+                              str2datetime(st.session_state['edate']))
+            if get_exercise is None:
+                return None
+            st.dataframe(get_exercise)
 
         elif mode == TableView.medicine:
             st.dataframe(self.get_medicine(st.session_state['user_uid'],  str2datetime(st.session_state['sdate'])))
@@ -126,11 +123,11 @@ class Portfolio_Channel_Layout():
 
     def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
         df = self.get_exercise(user_uid, sdate, edate)
-        df = df[['start_time', 'end_time']]
 
         if df is None:
             return None
 
+        df = df[['start_time', 'end_time']]
         for index, row in df.iterrows():
             ex_start = str(row['start_time'])
             ex_end = str(row['end_time'])
@@ -222,6 +219,9 @@ class Portfolio_Channel_Layout():
         return channel_healthcare_info_session.get_cgm_data(user_uid, sdate, edate)
 
     def get_exercise(self, user_uid: int, sdate: date, edate:date):
+        get_exercise_data = channel_healthcare_info_session.get_exercise_data(user_uid, sdate, edate)
+        if get_exercise_data is None:
+            return None
         return channel_healthcare_info_session.get_exercise_data(user_uid, sdate, edate)
 
     def get_meal(self, user_uid: int, sdate: date, edate:date):

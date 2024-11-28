@@ -41,5 +41,5 @@ if __name__ == '__main__':
         response = requests.get(f"{BACKEND_URL}/server_sync")
         dashboard_layout.draw_dashboard()
     except Exception as e:
-        st.error(f"☠️ something wrong ☠️ {e}")
+        st.error(f"☠️ something wrong ☠️ {e} {response}")
 

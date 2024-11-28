@@ -25,7 +25,6 @@ class DataManager:
             cgm_info[user_uid] = cgm_json_data
         else:
             self.cgm_dict[user_uid] = cgm_json_data
-            # st.success('세션 업데이트 후 로드')
 
     def get_exercise(self, user_uid: int, sdate: date, edate: date) -> Optional[Dict[str, Any]]:
 
