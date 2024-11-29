@@ -267,7 +267,8 @@ class Portfolio_Channel_Layout():
                 2. 최소값과 최대값이 기본 범위(60, 240) 안에 있을 경우 기본 범위를 반환합니다.
                 3. 최소값이 기본 범위를 벗어나면 최소값에서 20을 뺀 값을 하한으로 설정합니다.
                 4. 최대값이 기본 범위를 벗어나면 최대값에 20을 더한 값을 상한으로 설정합니다.
-                5. 하한과 상한은 최소값이 60 미만일 경우 60, 최대값이 350 초과일 경우 350으로 제한합니다.
+                5. 상한값은 최대 480까지 설정 가능하며, 최소값은 60 미만으로 내려가지 않도록 제한합니다.
+                6. 최대값이 420 이상인 경우 상한값을 480으로 고정합니다.
 
             Args:
                 all_y_axis_values (list): Y축 데이터 값 리스트.
@@ -279,10 +280,13 @@ class Portfolio_Channel_Layout():
         if all_y_axis_values:
             min_y, max_y = min(all_y_axis_values), max(all_y_axis_values)
 
+            # 기본 혈당 범위 내에서 처리
             if 60 < min_y < 240 and 60 < max_y < 240:
                 return [60, 240]
             else:
-                return [min(60, min_y - 20), max(350, max_y + 20)]
+                # 최대 혈당이 420 이상인 경우 상한선을 480으로 설정
+                max_limit = 480 if max_y > 420 else 350
+                return [min(60, min_y - 20), max(max_limit, max_y + 20)]
         else:
             return [60, 240]
 
