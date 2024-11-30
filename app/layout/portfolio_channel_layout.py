@@ -66,7 +66,7 @@ class Portfolio_Channel_Layout():
         self.plot_cgm(fig, user_uid, sdate, edate)
         self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal(fig, user_uid, sdate, edate)
-
+        self.plot_medicine(fig, user_uid, sdate)
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self):
@@ -80,6 +80,7 @@ class Portfolio_Channel_Layout():
         self.plot_cgm(fig, user_uid, sdate, edate)
         self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal_zone(fig, user_uid, sdate, edate)
+        self.plot_medicine(fig, user_uid, sdate)
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -249,3 +250,5 @@ class Portfolio_Channel_Layout():
             ))
 
 
+    def plot_medicine(self, fig, user_uid: int, sdate: datetime):
+        df = channel_healthcare_session_service.get_medicine_data(user_uid, sdate)

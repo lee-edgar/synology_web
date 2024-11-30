@@ -105,6 +105,9 @@ class DataAgent:
 
             if medicine is not None:
                 medicine_list.extend(medicine)
+            else:
+                return None
+
 
         return medicine_list
 

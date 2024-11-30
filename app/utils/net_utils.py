@@ -107,34 +107,58 @@ class NetUtil:
     #     }
     #     return self._make_request(GET_MEAL, payload)
 
+    # def get_medicine(self, user_uid: int, regist_time: datetime) -> Optional[dict]:
+    #     params = {
+    #         "user_uid": user_uid,
+    #         "regist_time": regist_time.strftime("%Y-%m-%dT%H:%M:%S"),
+    #     }
+    #     url = f'{GET_MEDICINE}'
+    #     response = requests.get(url=url, params=params)  # GET 요청으로 변경
+    #
+    #     if response.status_code != 200:
+    #         logger.error(f"Failed to get medicine info with user uid:{user_uid}. status_code: {response.status_code}")
+    #         return None
+    #
+    #     return response
+
     def get_medicine(self, user_uid: int, regist_time: datetime) -> Optional[dict]:
         params = {
             "user_uid": user_uid,
             "regist_time": regist_time.strftime("%Y-%m-%dT%H:%M:%S"),
         }
         url = f'{GET_MEDICINE}'
-        response = requests.get(url=url, params=params)  # GET 요청으로 변경
 
-        if response.status_code != 200:
-            logger.error(f"Failed to get medicine info with user uid:{user_uid}. status_code: {response.status_code}")
+        try:
+            response = requests.get(url=url, params=params)  # GET 요청
+            if response.status_code == 200:
+                # JSON 파싱 시도
+                try:
+                    return response.json()
+                except Exception as e:
+                    logger.error(f"Error parsing JSON response: {e}")
+                    st.error(f"데이터를 처리하는 중 문제가 발생했습니다. (JSON 오류)")
+                    return None
+
+            elif response.status_code == 404:
+                st.warning(f"복약 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
+                logger.info(f"No exercise data found for user_uid {user_uid}. URL: {url}")
+                return None
+
+            elif response.status_code == 500:
+                st.error(f"서버 내부 오류로 데이터를 가져올 수 없습니다. (user_uid: {user_uid})")
+                logger.error(f"500 Error: Internal server issue for {user_uid}. URL: {url}")
+                return None
+
+            else:
+                st.warning(f"예상치 못한 응답 코드: {response.status_code}")
+                logger.warning(f"Unexpected response: {response.status_code} for {user_uid}. URL: {url}")
+                return None
+
+        except requests.exceptions.RequestException as e:
+            logger.error(f"HTTP 요청 중 오류 발생: {e}")
+            st.error(f"데이터를 가져오는 중 네트워크 문제가 발생했습니다.")
             return None
 
-        return response
-
-    # def get_medicine(self, user_uid: int, start_time: datetime) -> Optional[dict]:
-    #     """
-    #     Fetch medicine history for a given user on a specific date.
-    #     """
-    #     start_of_day = datetime.combine(start_time.date(), datetime.min.time())  # 00:00:00
-    #     end_of_day = datetime.combine(start_time.date(), datetime.max.time())   # 23:59:59
-    #
-    #     payload = {
-    #         "fromTime": start_of_day.strftime("%Y-%m-%dT%H:%M:%S"),
-    #         "toTime": end_of_day.strftime("%Y-%m-%dT%H:%M:%S"),
-    #         "query_type": "user_uid",
-    #         "key": f"{user_uid}"
-    #     }
-    #     return self._make_request(GET_MEDICINE, payload)
 
 
 net_util:NetUtil = NetUtil()

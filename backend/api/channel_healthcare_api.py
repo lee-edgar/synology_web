@@ -126,46 +126,84 @@ def read_meal(user_uid : int, start_date : datetime, end_date:datetime, db : Ses
     return meal_data
 
 
+# @router.get("/medicine", response_model=List[MEDICINEHistoryResponse], tags=["ChannelHealthcare"])
+# def read_medicine(user_uid : int, regist_time : datetime, db : Session = Depends(get_db)):
+#     '''
+#     medicine History 정보를 조회하는 엔드포인트
+#     Args:
+#        user_uid: 사용자 ID
+#        start_date: 조회 시작 날짜
+#        end_date: 조회 종료 날짜
+#     :return:
+#         특정 user_uid의 지정된 기간 동안의 복약 기록 데이터
+#     '''
+#
+#     try:
+#         # start_time의 날짜 범위 계산
+#         # start_of_day = datetime.combine(start_date.date(), datetime.min.time())  # 2023-11-01 00:00:00
+#         # end_of_day = datetime.combine(start_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
+#         end_date = datetime.combine(regist_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
+#
+#         # 데이터 필터링
+#         # medicine_data = db.query(MEDICINE_HistoryModel).filter(
+#         #     MEDICINE_HistoryModel.user_uid == user_uid,
+#         #     MEDICINE_HistoryModel.regist_time.between(start_of_day, end_of_day)  # 날짜 범위 필터링
+#         # ).order_by(MEDICINE_HistoryModel.regist_time).all()
+#
+#         medicine_data = db.query(MEDICINE_HistoryModel).filter(
+#             MEDICINE_HistoryModel.user_uid == user_uid
+#         ).order_by(MEDICINE_HistoryModel.regist_time).all()
+#
+#         # medicine_data = db.query(MEDICINE_HistoryModel).filter(
+#         #     MEDICINE_HistoryModel.user_uid == user_uid,
+#         #     MEDICINE_HistoryModel.regist_time <= end_date,  # 식사 시작 시간이 조회 종료일 이전
+#         #     MEDICINE_HistoryModel.end_date >= regist_time   # 식사 종료 시간이 조회 시작일 이후
+#         # ).order_by(MEDICINE_HistoryModel.regist_time).all()
+#
+#         if not medicine_data:
+#             raise HTTPException(status_code=404, detail="No medicine data found for this user on the given date")
+#
+#         return medicine_data
+#
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+#
+#     return medicine_data
+
+# new version test
 @router.get("/medicine", response_model=List[MEDICINEHistoryResponse], tags=["ChannelHealthcare"])
 def read_medicine(user_uid : int, regist_time : datetime, db : Session = Depends(get_db)):
-    '''
-    medicine History 정보를 조회하는 엔드포인트
-    Args:
-       user_uid: 사용자 ID
-       start_date: 조회 시작 날짜
-       end_date: 조회 종료 날짜
-    :return:
-        특정 user_uid의 지정된 기간 동안의 복약 기록 데이터
-    '''
-
     try:
-        # start_time의 날짜 범위 계산
-        # start_of_day = datetime.combine(start_date.date(), datetime.min.time())  # 2023-11-01 00:00:00
-        # end_of_day = datetime.combine(start_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
+        # 로그: 매개변수 확인
+        logger.info(f"Fetching exercise data for user_uid: {user_uid}, regist_time: {regist_time}")
         end_date = datetime.combine(regist_time.date(), datetime.max.time())  # 2023-11-01 23:59:59
-
-        # 데이터 필터링
-        # medicine_data = db.query(MEDICINE_HistoryModel).filter(
-        #     MEDICINE_HistoryModel.user_uid == user_uid,
-        #     MEDICINE_HistoryModel.regist_time.between(start_of_day, end_of_day)  # 날짜 범위 필터링
-        # ).order_by(MEDICINE_HistoryModel.regist_time).all()
 
         medicine_data = db.query(MEDICINE_HistoryModel).filter(
             MEDICINE_HistoryModel.user_uid == user_uid
         ).order_by(MEDICINE_HistoryModel.regist_time).all()
 
-        # medicine_data = db.query(MEDICINE_HistoryModel).filter(
-        #     MEDICINE_HistoryModel.user_uid == user_uid,
-        #     MEDICINE_HistoryModel.regist_time <= end_date,  # 식사 시작 시간이 조회 종료일 이전
-        #     MEDICINE_HistoryModel.end_date >= regist_time   # 식사 종료 시간이 조회 시작일 이후
-        # ).order_by(MEDICINE_HistoryModel.regist_time).all()
-
+        # 데이터가 없을 경우 404 반환
         if not medicine_data:
-            raise HTTPException(status_code=404, detail="No medicine data found for this user on the given date")
+            logger.warning(f"No exercise data found for user_uid {user_uid} {regist_time}")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No exercise data found for user_uid {user_uid} {regist_time}"
+            )
 
+        # 데이터가 있는 경우 반환
+        logger.info(f"Fetched {len(medicine_data)} exercise records for user_uid {user_uid}.")
         return medicine_data
 
+    except HTTPException as e:
+        # HTTPException은 그대로 반환
+        raise e
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
+        # 예상치 못한 오류: 500 반환
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
 
     return medicine_data

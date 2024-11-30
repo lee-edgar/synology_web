@@ -32,17 +32,18 @@ class ChannelHealthcareSessionService:
         return pd.DataFrame(meal_info)
 
     def get_medicine_data(self, user_uid: int, sdate: date):
-        df = pd.DataFrame(data_agent.get_medicine(user_uid, sdate))
+        medicine_info = data_agent.get_medicine(user_uid, sdate)
 
+        if medicine_info is None:
+            return None
+
+        df = pd.DataFrame(data_agent.get_medicine(user_uid, sdate))
         # st.session_state에서 날짜 가져오기
         session_sdate, session_edate = pd.to_datetime(st.session_state.sdate), pd.to_datetime(st.session_state.edate)
-
         # regist_time 필터링
         df['regist_time'] = pd.to_datetime(df['regist_time'])  # datetime 형식으로 변환
         filtered_df = df[(df['regist_time'] >= session_sdate) & (df['regist_time'] <= session_edate)]
 
-        if filtered_df is None:
-            return None
         return filtered_df
 
 

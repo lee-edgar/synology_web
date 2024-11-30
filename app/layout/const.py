@@ -68,3 +68,9 @@ DEFAULT_SESSION_STATE = {
     'edate': '2023-08-02T23:59:59',   # 종료 날짜: 하루의 마지막 시간
     'data_call_session': None
 }
+# DEFAULT_SESSION_STATE = {
+#     'user_uid': 187,
+#     'sdate': '2023-11-01T00:00:00',  # 시작 날짜: 자정
+#     'edate': '2023-11-02T23:59:59',   # 종료 날짜: 하루의 마지막 시간
+#     'data_call_session': None
+# }
