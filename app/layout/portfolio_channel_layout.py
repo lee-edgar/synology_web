@@ -60,7 +60,6 @@ class Portfolio_Channel_Layout():
         edate = str2datetime(st.session_state['edate'])
 
 
-        # self.get_medicine(user_uid, sdate)
 
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
@@ -74,13 +73,12 @@ class Portfolio_Channel_Layout():
         sdate = str2datetime(st.session_state['sdate'])
         edate = str2datetime(st.session_state['edate'])
 
-        # self.get_medicine(user_uid, sdate)
 
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
-        self.plot_exercise(fig, user_uid, sdate, edate)
+        # self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal_zone(fig, user_uid, sdate, edate)
-        self.plot_medicine(fig, user_uid, sdate)
+        # self.plot_medicine(fig, user_uid, sdate)
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -251,4 +249,28 @@ class Portfolio_Channel_Layout():
 
 
     def plot_medicine(self, fig, user_uid: int, sdate: datetime):
+        '''
+        약물의 vrect표현을 end time 생성
+        end : start + 1minutes
+        '''
         df = channel_healthcare_session_service.get_medicine_data(user_uid, sdate)
+        if df is None:
+            return None
+
+        # Ensure 'regist_time' is in datetime format
+        df['regist_time'] = pd.to_datetime(df['regist_time'])
+
+        # Add a new column 'end_time' by adding 5 minutes to 'regist_time'
+        df['end_time'] = df['regist_time'] + pd.Timedelta(minutes=1)
+
+        for index, row in df.iterrows():
+            ex_start = row['regist_time']
+            ex_end = row['end_time']
+            fig.add_vrect(
+                x0=ex_start,
+                x1=ex_end,
+                fillcolor='rgba(255, 255, 100, 0.5)',
+                line_width=0.3,
+                annotation_position='top left',
+                annotation_text="복약"
+            )

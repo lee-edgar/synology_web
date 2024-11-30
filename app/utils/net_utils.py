@@ -51,16 +51,17 @@ class NetUtil:
 
         try:
             response = requests.get(url=url, params=params)  # GET 요청
+
             if response.status_code == 200:
                 # JSON 파싱 시도
                 try:
-                    return response.json()
+                    return response
                 except Exception as e:
                     logger.error(f"Error parsing JSON response: {e}")
-                    st.error(f"데이터를 처리하는 중 문제가 발생했습니다. (JSON 오류)")
+                    st.error(f"get_exercise 데이터를 처리하는 중 문제가 발생했습니다. (JSON 오류)")
                     return None
 
-            elif response.status_code == 404:
+            if response.status_code == 404:
                 st.warning(f"운동 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
                 logger.info(f"No exercise data found for user_uid {user_uid}. URL: {url}")
                 return None
@@ -79,6 +80,49 @@ class NetUtil:
             logger.error(f"HTTP 요청 중 오류 발생: {e}")
             st.error(f"데이터를 가져오는 중 네트워크 문제가 발생했습니다.")
             return None
+    # def get_exercise(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
+    #     params = {
+    #         "user_uid": user_uid,
+    #         "start_date": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
+    #         "end_date": end_time.strftime("%Y-%m-%dT%H:%M:%S")
+    #     }
+    #     url = f'{GET_EXERCISE}'
+    #
+    #     try:
+    #         response = requests.get(url=url, params=params)
+    #         st.write(f"Response Status Code: {response.status_code}")
+    #         st.write(f"Response Content: {response.text}")  # 디버깅용
+    #
+    #         if response.status_code == 200:
+    #             try:
+    #                 # JSON 파싱 시도
+    #                 data = response.json()
+    #                 st.write("Parsed JSON Data:", data)
+    #                 return data
+    #             except ValueError as e:
+    #                 logger.error(f"JSON 파싱 오류: {e}")
+    #                 st.error("⚠️ JSON 데이터 처리 중 문제가 발생했습니다.")
+    #                 return None
+    #
+    #         elif response.status_code == 404:
+    #             st.warning(f"운동 데이터가 없습니다. (user_uid: {user_uid})")
+    #             logger.info(f"404 Error: No exercise data found for user_uid {user_uid}. URL: {url}")
+    #             return None
+    #
+    #         elif response.status_code == 500:
+    #             st.error(f"서버 내부 오류로 데이터를 가져올 수 없습니다. (user_uid: {user_uid})")
+    #             logger.error(f"500 Error: Internal server issue for {user_uid}. URL: {url}")
+    #             return None
+    #
+    #         else:
+    #             st.warning(f"예상치 못한 응답 코드: {response.status_code}")
+    #             logger.warning(f"Unexpected response: {response.status_code} for {user_uid}. URL: {url}")
+    #             return None
+    #
+    #     except requests.exceptions.RequestException as e:
+    #         logger.error(f"HTTP 요청 중 오류 발생: {e}")
+    #         st.error(f"⚠️ 데이터를 가져오는 중 네트워크 문제가 발생했습니다.")
+    #         return None
 
     def get_meal(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
         params = {
@@ -95,31 +139,6 @@ class NetUtil:
 
         return response
 
-    # def get_meal(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
-    #     """
-    #     Fetch meal history for a given user and time range.
-    #     """
-    #     payload = {
-    #         "fromTime": start_time.strftime("%Y-%m-%dT%H:%M:%S"),
-    #         "toTime": end_time.strftime("%Y-%m-%dT%H:%M:%S"),
-    #         "query_type": "user_uid",
-    #         "key": f"{user_uid}"
-    #     }
-    #     return self._make_request(GET_MEAL, payload)
-
-    # def get_medicine(self, user_uid: int, regist_time: datetime) -> Optional[dict]:
-    #     params = {
-    #         "user_uid": user_uid,
-    #         "regist_time": regist_time.strftime("%Y-%m-%dT%H:%M:%S"),
-    #     }
-    #     url = f'{GET_MEDICINE}'
-    #     response = requests.get(url=url, params=params)  # GET 요청으로 변경
-    #
-    #     if response.status_code != 200:
-    #         logger.error(f"Failed to get medicine info with user uid:{user_uid}. status_code: {response.status_code}")
-    #         return None
-    #
-    #     return response
 
     def get_medicine(self, user_uid: int, regist_time: datetime) -> Optional[dict]:
         params = {
@@ -133,7 +152,7 @@ class NetUtil:
             if response.status_code == 200:
                 # JSON 파싱 시도
                 try:
-                    return response.json()
+                    return response
                 except Exception as e:
                     logger.error(f"Error parsing JSON response: {e}")
                     st.error(f"데이터를 처리하는 중 문제가 발생했습니다. (JSON 오류)")
