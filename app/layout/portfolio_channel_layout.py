@@ -7,7 +7,8 @@ from app.layout.const import *
 from streamlit_pdf_viewer import pdf_viewer
 from datetime import date, datetime, timedelta
 from app.session.channel_healthcare_session_service import channel_healthcare_session_service
-from app.utils.streamlit_utils import get_session_state, update_session_state, initialize_session_state, str2datetime
+from app.utils.streamlit_utils import get_session_state, update_session_state, initialize_session_state, str2datetime, \
+    str2datetime_strptim
 import plotly.graph_objects as go
 import pandas as pd
 
@@ -49,19 +50,28 @@ class Portfolio_Channel_Layout():
         st.markdown(f"{CHANNEL_HEALTHCARE_MARKDOWN}")
 
         # 데이터 시각화 및 테이블 생성
-        self.draw_graph()
+        select_date = channel_healthcare_session_service.update_navigatation()
+        self.draw_graph(select_date)
         self.draw_sub_graph()
         self.draw_table()
 
 
-    def draw_graph(self):
+    def draw_graph(self, select_date):
         user_uid = st.session_state['user_uid']
-        sdate = str2datetime(st.session_state['sdate'])
-        edate = str2datetime(st.session_state['edate'])
+
+        if select_date is not None:
+            sdate, edate = (select_date)
+            sdate, edate = (sdate), (edate)
+
+            st.write('select date', sdate,edate)
+        else:
+            sdate = str2datetime(st.session_state['sdate'])
+            edate = str2datetime(st.session_state['edate'])
 
 
 
         fig = go.Figure()
+
         self.plot_cgm(fig, user_uid, sdate, edate)
         self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal(fig, user_uid, sdate, edate)
@@ -115,6 +125,8 @@ class Portfolio_Channel_Layout():
             )
 
     def plot_cgm(self, fig, user_uid:int, sdate:datetime, edate:datetime):
+        st.write('plot_cgm', sdate, edate)
+
         all_y_axis_values = []
         max_bg = []
 

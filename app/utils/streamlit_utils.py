@@ -57,3 +57,23 @@ def str2datetime(date:str) -> datetime:
     if isinstance(date, datetime):
         return date
     return datetime.fromisoformat(date)
+
+
+def str2datetime_strptim(date, fmt="%Y-%m-%d %H:%M:%S") -> datetime:
+    """
+    문자열 또는 datetime 객체를 받아 datetime 객체를 반환하는 함수.
+    문자열일 경우 지정된 포맷에 따라 datetime 객체로 변환합니다.
+
+    Returns:
+        datetime: 입력 값이 datetime 객체라면 그대로 반환,
+                  문자열이라면 포맷에 따라 변환된 datetime 객체.
+
+    Raises:
+        ValueError: 문자열이 포맷에 맞지 않을 경우 예외 발생.
+    """
+    if isinstance(date, datetime):
+        return date  # 이미 datetime 객체라면 그대로 반환
+    try:
+        return datetime.strptime(date, fmt)  # 문자열을 지정된 포맷으로 변환
+    except ValueError as e:
+        raise ValueError(f"Invalid date format: {date}. Expected format: {fmt}") from e

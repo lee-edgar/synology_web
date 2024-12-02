@@ -6,6 +6,8 @@ from app.utils.data_agent import DataAgent, data_agent
 from datetime import datetime, date
 import plotly.graph_objects as go
 from app.layout.const import *
+from datetime import date, datetime, timedelta
+from app.utils.streamlit_utils import get_session_state, update_session_state, initialize_session_state, str2datetime, str2datetime_strptim
 
 
 @singleton
@@ -176,5 +178,34 @@ class ChannelHealthcareSessionService:
                 dtick_value = X_AXIS_DTICK_VALUES[day_limit]
 
         return dtick_value
+
+    def update_navigatation(self):
+        st.write(st.session_state['sdate'], st.session_state['edate'])
+        col_period_caption, col_period, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
+        with col_period_caption:
+            st.write('연속혈당계 사용 시기')
+
+        with col1:
+            click = st.button(':arrow_backward: 이전', use_container_width=True)
+            if click:
+                sdate = str2datetime(st.session_state['sdate'])  + timedelta(days=-1)
+                edate = str2datetime(st.session_state['edate'])  + timedelta(days=-1)
+
+                st.session_state['sdate'] = sdate
+                st.session_state['edate'] = edate
+
+                return sdate, edate
+
+        with col3:
+            click = st.button('다음 :arrow_forward:', use_container_width=True)
+            if click:
+                sdate = str2datetime(st.session_state['sdate']) + timedelta(days=+1)
+                edate = str2datetime(st.session_state['edate']) + timedelta(days=+1)
+
+                st.session_state['sdate'] = sdate
+                st.session_state['edate'] = edate
+                st.write('clicked', (sdate), edate)
+                return sdate, edate
+
 
 channel_healthcare_session_service: ChannelHealthcareSessionService = ChannelHealthcareSessionService()
