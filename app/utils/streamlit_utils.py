@@ -1,7 +1,10 @@
 import streamlit as st
 from typing import Any,List
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from requests.packages import target
+
+from datetime import time as dttime
+from typing import Tuple, List, Union, Optional
 
 
 def update_session_state(key: str, value: Any):
@@ -77,3 +80,18 @@ def str2datetime_strptim(date, fmt="%Y-%m-%d %H:%M:%S") -> datetime:
         return datetime.strptime(date, fmt)  # 문자열을 지정된 포맷으로 변환
     except ValueError as e:
         raise ValueError(f"Invalid date format: {date}. Expected format: {fmt}") from e
+
+def get_date_list(start_date:date, end_date:date) -> List[datetime]:
+    date_range = []
+    current_date = start_date
+
+    while current_date <= end_date:
+        date_range.append(current_date)
+        current_date += timedelta(days=1)
+
+    return date_range
+
+def get_alltime_date( when: date) -> Tuple[datetime, datetime]:
+    fromT = dttime(0, 0, 0)
+    toT = dttime(23, 59, 59)
+    return datetime.combine(when, fromT), datetime.combine(when, toT)

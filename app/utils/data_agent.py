@@ -7,26 +7,32 @@ from app.utils.net_utils import net_util
 import streamlit as st
 from typing import Dict, Any, Optional
 
+from app.utils.streamlit_utils import get_date_list, get_alltime_date
 
 @singleton
 class DataAgent:
     def __init__(self):
         pass
 
-
+    # 원본
     def get_cgm(self, user_uid: int, sdate: date, edate: date) -> Optional[dict]:
         cgm_list = []
         cgm_info = data_manager.get_cgm(user_uid, sdate, edate)
-
+        st.write('tar',  sdate, edate)
         if cgm_info is not None:
             cgm_list.extend(cgm_info)
-            st.session_state.data_call_session = '업데이트 된 세션에서 로드'
+            st.session_state.data_call_session = '저장값 로드'
+            st.write('old', sdate, edate)
+            st.success('저장값 로드')
+
+
         elif cgm_info is None:
             cgm = self.update_cgm(user_uid, sdate, edate)
-            st.session_state.data_call_session = '세션 업데이트 후 로드'
+            st.session_state.data_call_session = '새롭게 업데이트'
+            st.success('새롭게 업데이트')
+            st.write('new', sdate, edate)
             if cgm is not None:
                 cgm_list.extend(cgm)
-
         return cgm_list
 
     def update_cgm(self, user_uid:int, sdate:date, edate:date) -> Optional[dict]:
@@ -39,6 +45,7 @@ class DataAgent:
             return None
         data_manager.update_cgm(user_uid, sdate, cgm_json_data)
         return cgm_json_data
+
 
     def get_exercise(self, user_uid: int, sdate: date, edate: date) -> Optional[dict]:
         exercise_list = []

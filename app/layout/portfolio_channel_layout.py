@@ -41,7 +41,14 @@ class Portfolio_Channel_Layout():
         """
         '''
         initialize_session_state(DEFAULT_SESSION_STATE)
+
+        user_uid = st.session_state['user_uid']
+        sdate = str2datetime(st.session_state['sdate'])
+        edate = str2datetime(st.session_state['edate'])
+
+        channel_healthcare_session_service.request_data(user_uid, sdate, edate)
         self.render_layout()
+
 
     def render_layout(self):
         """
@@ -51,25 +58,20 @@ class Portfolio_Channel_Layout():
 
         # 데이터 시각화 및 테이블 생성
         select_date = channel_healthcare_session_service.update_navigatation()
-        self.draw_graph(select_date)
-        self.draw_sub_graph()
-        self.draw_table()
 
-
-    def draw_graph(self, select_date):
         user_uid = st.session_state['user_uid']
-
         if select_date is not None:
             sdate, edate = (select_date)
-            sdate, edate = (sdate), (edate)
-
             st.write('select date', sdate,edate)
         else:
             sdate = str2datetime(st.session_state['sdate'])
-            edate = str2datetime(st.session_state['edate'])
+            edate = str2datetime(st.session_state['sdate']) + timedelta(days=+1)
 
+        self.draw_graph(user_uid, sdate, edate)
+        self.draw_sub_graph(user_uid, sdate, edate)
+        self.draw_table(user_uid, sdate, edate)
 
-
+    def draw_graph(self, user_uid, sdate, edate):
         fig = go.Figure()
 
         self.plot_cgm(fig, user_uid, sdate, edate)
@@ -78,10 +80,10 @@ class Portfolio_Channel_Layout():
         self.plot_medicine(fig, user_uid, sdate)
         st.plotly_chart(fig , use_container_width=True)
 
-    def draw_sub_graph(self):
-        user_uid = st.session_state['user_uid']
-        sdate = str2datetime(st.session_state['sdate'])
-        edate = str2datetime(st.session_state['edate'])
+    def draw_sub_graph(self,  user_uid, sdate, edate):
+        # user_uid = st.session_state['user_uid']
+        # sdate = str2datetime(st.session_state['sdate'])
+        # edate = str2datetime(st.session_state['edate'])
 
 
         fig = go.Figure()
@@ -93,45 +95,74 @@ class Portfolio_Channel_Layout():
         st.plotly_chart(fig, use_container_width=True)
 
 
-    def draw_table(self):
+    def draw_table(self, user_uid, sdate, edate):
         mode = st.radio('회원 정보 탭', [item.value for item in TableView],
                         horizontal=True, label_visibility='collapsed')
         st.info(st.session_state.data_call_session)
+
         if mode == TableView.cgm:
             st.dataframe(channel_healthcare_session_service.get_cgm_data(
-                st.session_state['user_uid'],
-                str2datetime(st.session_state['sdate']),
-                str2datetime(st.session_state['edate']))
+                user_uid,
+                sdate,
+                edate)
             )
 
         elif mode == TableView.meal:
             st.dataframe(channel_healthcare_session_service.get_meal_data(
-                st.session_state['user_uid'],
-                str2datetime(st.session_state['sdate']),
-                str2datetime(st.session_state['edate']))
+                user_uid,
+                sdate,
+                edate)
             )
 
         elif mode == TableView.exercise:
             st.dataframe(channel_healthcare_session_service.get_exercise_data(
-                st.session_state['user_uid'],
-                str2datetime(st.session_state['sdate']),
-                str2datetime(st.session_state['edate']))
+                user_uid,
+                sdate,
+                edate)
             )
 
         elif mode == TableView.medicine:
             st.dataframe(channel_healthcare_session_service.get_medicine_data(
-                st.session_state['user_uid'],
-                str2datetime(st.session_state['sdate']))
+                user_uid,
+                sdate)
             )
 
+        # if mode == TableView.cgm:
+        #     st.dataframe(channel_healthcare_session_service.get_cgm_data(
+        #         st.session_state['user_uid'],
+        #         str2datetime(st.session_state['sdate']),
+        #         str2datetime(st.session_state['edate']))
+        #     )
+        #
+        # elif mode == TableView.meal:
+        #     st.dataframe(channel_healthcare_session_service.get_meal_data(
+        #         st.session_state['user_uid'],
+        #         str2datetime(st.session_state['sdate']),
+        #         str2datetime(st.session_state['edate']))
+        #     )
+        #
+        # elif mode == TableView.exercise:
+        #     st.dataframe(channel_healthcare_session_service.get_exercise_data(
+        #         st.session_state['user_uid'],
+        #         str2datetime(st.session_state['sdate']),
+        #         str2datetime(st.session_state['edate']))
+        #     )
+        #
+        # elif mode == TableView.medicine:
+        #     st.dataframe(channel_healthcare_session_service.get_medicine_data(
+        #         st.session_state['user_uid'],
+        #         str2datetime(st.session_state['sdate']))
+        #     )
+
     def plot_cgm(self, fig, user_uid:int, sdate:datetime, edate:datetime):
-        st.write('plot_cgm', sdate, edate)
+        st.write( user_uid, sdate, edate)
 
         all_y_axis_values = []
         max_bg = []
 
         df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
         df['std_time'] = pd.to_datetime(df['std_time'])
+        df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
         df = df[['std_time', 'bg']]
         if df is None:
             st.warning(MSG_NO_CGM_DATA)

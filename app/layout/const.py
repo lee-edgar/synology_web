@@ -64,8 +64,8 @@ X_AXIS_DTICK_VALUES = { 0: 3600 * 1000, 1: 7200 * 1000, 3: 14400 * 1000, 7: 4320
 
 DEFAULT_SESSION_STATE = {
     'user_uid': 350,
-    'sdate': '2023-07-30T00:00:00',  # 시작 날짜: 자정
-    'edate': '2023-08-02T23:59:59',   # 종료 날짜: 하루의 마지막 시간
+    'sdate': '2023-07-21T00:00:00',  # 시작 날짜: 자정
+    'edate': '2023-08-03T23:59:59',   # 종료 날짜: 하루의 마지막 시간
     'data_call_session': None
 }
 # DEFAULT_SESSION_STATE = {
