@@ -71,8 +71,8 @@ class Portfolio_Channel_Layout():
 
 
         self.draw_graph(user_uid, viz_start_date, viz_end_date)
-        self.draw_sub_graph(user_uid, viz_end_date, viz_end_date)
-        self.draw_table(user_uid, viz_end_date, viz_end_date)
+        self.draw_sub_graph(user_uid, viz_start_date, viz_end_date)
+        self.draw_table(user_uid, viz_start_date, viz_end_date)
 
     def draw_user_info(self):
         selected_user = st.radio("유저를 선택하세요:", USER_GROUP, index=0)
@@ -102,7 +102,6 @@ class Portfolio_Channel_Layout():
 
     def draw_graph(self, user_uid, sdate, edate):
         fig = go.Figure()
-
         self.plot_cgm(fig, user_uid, sdate, edate)
         self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal(fig, user_uid, sdate, edate)
@@ -110,15 +109,11 @@ class Portfolio_Channel_Layout():
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
-
-
-
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate)
-        # self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal_zone(fig, user_uid, sdate, edate)
-        # self.plot_medicine(fig, user_uid, sdate)
-
+        self.plot_medicine(fig, user_uid, sdate)
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -127,12 +122,12 @@ class Portfolio_Channel_Layout():
                         horizontal=True, label_visibility='collapsed')
         st.info(st.session_state.data_call_session)
 
+
         if mode == TableView.cgm:
-            st.dataframe(channel_healthcare_session_service.get_cgm_data(
-                user_uid,
-                sdate,
-                edate)
-            )
+            df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
+            df['std_time'] = pd.to_datetime(df['std_time'])
+            df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
+            st.dataframe(df)
 
         elif mode == TableView.meal:
             st.dataframe(channel_healthcare_session_service.get_meal_data(
