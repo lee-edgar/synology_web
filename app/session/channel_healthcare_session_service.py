@@ -16,12 +16,10 @@ class ChannelHealthcareSessionService:
         pass
 
     def request_data(self, user_uid, sdate, edate):
-        # st.success('success request for data')
-        df = self.get_cgm_data(user_uid, sdate, edate)
-        st.write('df',df)
-        # self.get_meal_data(user_uid, sdate, edate)
-        # self.get_exercise_data(user_uid, sdate, edate)
-        # self.get_medicine_data(user_uid, sdate)
+        self.get_cgm_data(user_uid, sdate, edate)
+        self.get_meal_data(user_uid, sdate, edate)
+        self.get_exercise_data(user_uid, sdate, edate)
+        self.get_medicine_data(user_uid, sdate)
 
     def get_cgm_data(self, user_uid: int, sdate: date, edate:date):
         cgm_info = data_agent.get_cgm(user_uid, sdate, edate)
@@ -111,52 +109,36 @@ class ChannelHealthcareSessionService:
             raise ValueError("marker_type must be 'max', 'min', or 'mean'")
 
     def split_break_line(self, df: pd.DataFrame):
-        """
-        데이터프레임의 std_time을 기준으로 20분 이상 차이가 나는 구간별로 분리.
-        """
-        df_line_list = []
-        line_list = []
+        # 30분 기준으로 데이터가 시각적으로 연속된 구간과 끊어진 구간을 구분할 수 있음.
+        # 연속적인 구간과 비연속적인 구간을 강제로 잇게하면 신뢰성이 떨어지고, 라인 퀄리티가 떨어질 가능성이 있음.
 
-        # 데이터프레임이 비어 있는지 확인
+        df_line_list = []  # 분리된 구간 리스트
+        line_list = []  # 현재 구간 저장 리스트
+
         if df.empty:
             st.warning("빈 데이터프레임입니다.")
             return df_line_list
 
         # 시간 차이 계산
-        try:
-            diff = df.std_time.diff()
-            if diff.empty or len(diff) != len(df):
-                st.warning("시간 차이를 계산할 수 없습니다.")
-                return df_line_list
-        except Exception as e:
-            st.error(f"시간 차이 계산 중 오류: {e}")
-            return df_line_list
+        df['diff'] = df['std_time'].diff()  # 시간 차이 추가
 
-        # 구간별 분리
         for index, row in df.iterrows():
-            # 유효한 인덱스인지 확인
-            if index >= len(diff):
-                break
-
             # 첫 번째 행 처리
-            if pd.isna(diff.iloc[index]):
+            if pd.isna(row['diff']):
+                if line_list:  # 이전 구간이 있으면 저장
+                    df_line_list.append(pd.DataFrame(line_list))
                 line_list = []  # 새로운 리스트 초기화
                 line_list.append(row)
-            # 간격이 20분 이상인 경우
-            elif diff.iloc[index] > pd.Timedelta(minutes=20):
-                if line_list:  # 기존 리스트가 비어있지 않으면 추가
-                    df_split = pd.DataFrame(line_list)
-                    df_line_list.append(df_split)
-                line_list = []  # 새로운 리스트 초기화
-                line_list.append(row)
-            # 그 외 경우
+            # 시간 차이가 30분 이상인 경우
+            elif row['diff'] > pd.Timedelta(minutes=20):
+                df_line_list.append(pd.DataFrame(line_list))  # 현재 구간 저장
+                line_list = [row]  # 새 구간 시작
             else:
-                line_list.append(row)
+                line_list.append(row)  # 현재 구간에 추가
 
-        # 마지막 리스트 추가
+        # 마지막 구간 저장
         if line_list:
-            df_split = pd.DataFrame(line_list)
-            df_line_list.append(df_split)
+            df_line_list.append(pd.DataFrame(line_list))
 
         return df_line_list
 
@@ -217,31 +199,39 @@ class ChannelHealthcareSessionService:
         return dtick_value
 
     def update_navigatation(self):
-        col_period_caption, col_period, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
-        with col_period_caption:
-            st.write('연속혈당계 사용 시기')
+        __, __, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
 
+        # 현재 viz_start_date와 viz_end_date를 세션에서 가져오기
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+
+        # "이전" 버튼 클릭 시 처리
         with col1:
-            click = st.button(':arrow_backward: 이전', use_container_width=True)
-            if click:
-                sdate = str2datetime(st.session_state['sdate'])  + timedelta(days=-1)
-                edate = str2datetime(st.session_state['edate'])  + timedelta(days=-1)
+            if st.button(":arrow_backward: 이전", use_container_width=True):
+                # 날짜를 하루 전으로 이동
+                viz_start_date -= timedelta(days=1)
+                viz_end_date -= timedelta(days=1)
 
-                st.session_state['sdate'] = sdate
-                st.session_state['edate'] = edate
+                # 변경된 날짜를 세션 상태에 업데이트
+                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
 
-
-                return sdate, edate
-
+        # "다음" 버튼 클릭 시 처리
         with col3:
-            click = st.button('다음 :arrow_forward:', use_container_width=True)
-            if click:
-                sdate = str2datetime(st.session_state['sdate']) + timedelta(days=+1)
-                edate = str2datetime(st.session_state['edate']) + timedelta(days=+1)
+            if st.button("다음 :arrow_forward:", use_container_width=True):
+                # 날짜를 하루 후로 이동
+                viz_start_date += timedelta(days=1)
+                viz_end_date += timedelta(days=1)
 
-                st.session_state['sdate'] = sdate
-                st.session_state['edate'] = edate
-                return sdate, edate
+                # 변경된 날짜를 세션 상태에 업데이트
+                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+
+        # 현재 날짜 출력
+        with col2:
+            st.date_input('날짜 선택',
+                          (viz_start_date, viz_end_date),
+                          label_visibility='collapsed')
 
 
 channel_healthcare_session_service: ChannelHealthcareSessionService = ChannelHealthcareSessionService()

@@ -51,19 +51,8 @@ class Portfolio_Channel_Layout():
 
         st.markdown(f"{CHANNEL_HEALTHCARE_MARKDOWN}")
 
-        # 데이터 시각화 및 테이블 생성
-        # select_date = channel_healthcare_session_service.update_navigatation()
-        #
-        # user_uid = st.session_state['user_uid']
-        # if select_date is not None:
-        #     sdate, edate = (select_date)
-        #     st.write('select date', sdate,edate)
-        # else:
-        #     sdate = str2datetime(st.session_state['sdate'])
-        #     edate = str2datetime(st.session_state['sdate']) + timedelta(days=+1)
-        #
-        #
         self.draw_user_info()
+        # channel_healthcare_session_service.update_navigatation()
 
         user_uid = get_session_state(SESSION_USER_UID)
         viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
@@ -75,45 +64,86 @@ class Portfolio_Channel_Layout():
         self.draw_table(user_uid, viz_start_date, viz_end_date)
 
     def draw_user_info(self):
-        selected_user = st.radio("유저를 선택하세요:", USER_GROUP, index=0)
 
-        user_date_range = USER_DATE_RANGES.get(selected_user, {})
-        load_start_date = user_date_range.get("load_start_date")
-        load_end_date = user_date_range.get("load_end_date")
-        viz_start_date = user_date_range.get("viz_start_date")
-        viz_end_date = user_date_range.get("viz_end_date")
+        col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
 
 
-        if selected_user is not None:
-            update_session_state(SESSION_USER_UID, selected_user)
-            update_session_state(SESSION_LOAD_START_DATE, load_start_date)
-            update_session_state(SESSION_LOAD_END_DATE, load_end_date)
-            update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-            update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+        with col2 :
+            selected_user = st.selectbox(" 유저 선택 ", USER_GROUP, index=0,  label_visibility='collapsed')
+
+            user_date_range = USER_DATE_RANGES.get(selected_user, {})
+            load_start_date = user_date_range.get("load_start_date")
+            load_end_date = user_date_range.get("load_end_date")
+            viz_start_date = user_date_range.get("viz_start_date")
+            viz_end_date = user_date_range.get("viz_end_date")
+
+            if get_session_state(SESSION_USER_UID) != selected_user:
+                update_session_state(SESSION_USER_UID, selected_user)
+                update_session_state(SESSION_LOAD_START_DATE, load_start_date)
+                update_session_state(SESSION_LOAD_END_DATE, load_end_date)
+                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+
+            # st.write('get session', get_session_state(SESSION_USER_UID),  get_session_state(SESSION_LOAD_START_DATE),  get_session_state(SESSION_LOAD_END_DATE),
+            #          get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+            channel_healthcare_session_service.request_data(selected_user, load_start_date, load_end_date)
+
+        # channel_healthcare_session_service.update_navigatation()
+
+        # 현재 viz_start_date와 viz_end_date를 세션에서 가져오기
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+
+        # "이전" 버튼 클릭 시 처리
+        with col3:
+            if st.button(":arrow_backward: 이전", use_container_width=True):
+                # 날짜를 하루 전으로 이동
+                viz_start_date -= timedelta(days=1)
+                viz_end_date -= timedelta(days=1)
+
+                # 변경된 날짜를 세션 상태에 업데이트
+                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+
+        # "다음" 버튼 클릭 시 처리
+        with col5:
+            if st.button("다음 :arrow_forward:", use_container_width=True):
+                # 날짜를 하루 후로 이동
+                viz_start_date += timedelta(days=1)
+                viz_end_date += timedelta(days=1)
+
+                # 변경된 날짜를 세션 상태에 업데이트
+                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+
+        # 현재 날짜 출력
+        with col4:
+            clander_date = st.date_input('날짜 선택',
+                          (viz_start_date, viz_end_date),
+                          label_visibility='collapsed')
+
+            if clander_date[0] <= clander_date[1]:
+                sdate, edate = clander_date[0], clander_date[1]
 
 
-        st.write('get session', get_session_state(SESSION_USER_UID),  get_session_state(SESSION_LOAD_START_DATE),  get_session_state(SESSION_LOAD_END_DATE),
-                 get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-
-        channel_healthcare_session_service.request_data(selected_user, load_start_date, load_end_date)
 
 
 
 
     def draw_graph(self, user_uid, sdate, edate):
         fig = go.Figure()
-        self.plot_cgm(fig, user_uid, sdate, edate)
-        self.plot_exercise(fig, user_uid, sdate, edate)
-        self.plot_meal(fig, user_uid, sdate, edate)
-        self.plot_medicine(fig, user_uid, sdate)
+        self.plot_cgm(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        self.plot_exercise(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        self.plot_meal(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        self.plot_medicine(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE))
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
         fig = go.Figure()
-        self.plot_cgm(fig, user_uid, sdate, edate)
-        self.plot_exercise(fig, user_uid, sdate, edate)
-        self.plot_meal_zone(fig, user_uid, sdate, edate)
-        self.plot_medicine(fig, user_uid, sdate)
+        self.plot_cgm(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        self.plot_exercise(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        self.plot_meal_zone(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        self.plot_medicine(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE))
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -149,36 +179,9 @@ class Portfolio_Channel_Layout():
                 sdate)
             )
 
-        # if mode == TableView.cgm:
-        #     st.dataframe(channel_healthcare_session_service.get_cgm_data(
-        #         st.session_state['user_uid'],
-        #         str2datetime(st.session_state['sdate']),
-        #         str2datetime(st.session_state['edate']))
-        #     )
-        #
-        # elif mode == TableView.meal:
-        #     st.dataframe(channel_healthcare_session_service.get_meal_data(
-        #         st.session_state['user_uid'],
-        #         str2datetime(st.session_state['sdate']),
-        #         str2datetime(st.session_state['edate']))
-        #     )
-        #
-        # elif mode == TableView.exercise:
-        #     st.dataframe(channel_healthcare_session_service.get_exercise_data(
-        #         st.session_state['user_uid'],
-        #         str2datetime(st.session_state['sdate']),
-        #         str2datetime(st.session_state['edate']))
-        #     )
-        #
-        # elif mode == TableView.medicine:
-        #     st.dataframe(channel_healthcare_session_service.get_medicine_data(
-        #         st.session_state['user_uid'],
-        #         str2datetime(st.session_state['sdate']))
-        #     )
+
 
     def plot_cgm(self, fig, user_uid:int, sdate:datetime, edate:datetime):
-        st.write( user_uid, sdate, edate)
-
         all_y_axis_values = []
         max_bg = []
 
@@ -186,21 +189,25 @@ class Portfolio_Channel_Layout():
         df['std_time'] = pd.to_datetime(df['std_time'])
         df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
         df = df[['std_time', 'bg']]
-        if df is None:
+
+        if df is None or df.empty:
             st.warning(MSG_NO_CGM_DATA)
             return None
 
+
         df_line_list = channel_healthcare_session_service.split_break_line(df)
+        if not df_line_list:
+            st.warning("No segments found in split_break_line.")
+            return
         for df_list in df_line_list:
             all_y_axis_values.extend(df_list.bg.tolist())
             fig.add_trace(go.Scatter(x=df_list.std_time, y=df_list.bg,  mode='lines', line=dict(color='blue')))
 
         y_axis_range = channel_healthcare_session_service.calculate_y_axis_range(all_y_axis_values)
         x_axis_dtick = channel_healthcare_session_service.calculate_x_axis_range(
-            pd.to_datetime(st.session_state.sdate),
-            pd.to_datetime(st.session_state.edate)
+            pd.to_datetime(get_session_state(SESSION_VIZ_START_DATE)),
+            pd.to_datetime(get_session_state(SESSION_VIZ_END_DATE))
         )
-
 
         channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='max', color='red', label='Max BG')
         channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='min', color='green', label='Min BG')
@@ -222,40 +229,57 @@ class Portfolio_Channel_Layout():
 
     def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
         df = channel_healthcare_session_service.get_exercise_data(user_uid, sdate, edate)
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
 
         if df is None:
             return None
 
         df = df[['start_time', 'end_time']]
+        df['start_time'] = pd.to_datetime(df['start_time'])
+        df['end_time'] = pd.to_datetime(df['end_time'])
+        df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+
         for index, row in df.iterrows():
             ex_start = str(row['start_time'])
             ex_end = str(row['end_time'])
             fig.add_vrect(x0=ex_start, x1=ex_end, fillcolor='rgba(0, 255, 100, 0.5)', line_width=0.3,
                           annotation_position='top left', annotation_text="운동")
 
-
     def plot_meal(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+        # 데이터를 가져오고 필터링
         df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
-        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
 
         if df is None or df.empty:
+            st.warning("No meal data available for the selected range.")
             return None
 
+        # 필터 적용: SESSION_VIZ_START_DATE ~ SESSION_VIZ_END_DATE
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+
+        df['start_time'] = pd.to_datetime(df['start_time'])
+        df['end_time'] = pd.to_datetime(df['end_time'])
+        df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+
+        if df.empty:
+            st.warning("No meal data after filtering by visualization range.")
+            return None
+
+        # 필요한 열만 선택
+        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+
+        # 그래프에 데이터를 추가
         for index, row in df.iterrows():
-            start_time_dt = pd.to_datetime(row['start_time'])
-            end_time_dt = pd.to_datetime(row['end_time'])
+            start_time_dt = row['start_time']
+            end_time_dt = row['end_time']
             midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
 
-            # meal_zone_time이 edate를 초과하면 제외
-            if end_time_dt.date() > edate.date():
-                continue
-
-            start_time = str(row['start_time'])
-            end_time = str(row['end_time'])
+            start_time = start_time_dt.strftime('%Y-%m-%d %H:%M:%S')
+            end_time = end_time_dt.strftime('%Y-%m-%d %H:%M:%S')
             meal_div_code = str(row['meal_div_code'])
-            top_bg = str(row['top_bg'])
-            tir = str(row['tir'])
 
+            # 그래프에 영역 추가
             fig.add_vrect(
                 x0=start_time,
                 x1=end_time,
@@ -265,11 +289,22 @@ class Portfolio_Channel_Layout():
                 annotation_text=meal_div_code
             )
 
-
-
     def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime):
         df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
+        if df is None or df.empty:
+            st.warning("No meal data available for the selected range.")
+            return None
+
         df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+
+        df['start_time'] = pd.to_datetime(df['start_time'])
+        df['end_time'] = pd.to_datetime(df['end_time'])
+        df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+
+
 
         if df is None or df.empty:
             return None
