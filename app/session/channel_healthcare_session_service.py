@@ -110,26 +110,75 @@ class ChannelHealthcareSessionService:
         else:
             raise ValueError("marker_type must be 'max', 'min', or 'mean'")
 
-    def split_break_line(self, df:pd.DataFrame):
+    # def split_break_line(self, df:pd.DataFrame):
+    #     df_line_list = []
+    #     diff = df.std_time.diff()
+    #     for index, row in df.iterrows():
+    #         # 첫째 간격은 무조건 NaT, 서브 리스트 생성 및 초기값 저장
+    #         if pd.isna(diff.iloc[index]):
+    #             line_list = []
+    #             line_list.append(row)
+    #         # 간격이 20분 넘어가면 이전리스트까지 갈무리하고, 서브 리스트 생성 초기값 저장
+    #         elif diff.iloc[index] > pd.Timedelta(minutes=20):
+    #             df_split = pd.DataFrame(line_list)
+    #             df_line_list.append(df_split)
+    #             line_list = []
+    #             line_list.append(row)
+    #         # 그외에는 서브 리스트에 저장
+    #         else:
+    #             line_list.append(row)
+    #
+    #     df_split = pd.DataFrame(line_list)
+    #     df_line_list.append(df_split)
+    #     return df_line_list
+    def split_break_line(self, df: pd.DataFrame):
+        """
+        데이터프레임의 std_time을 기준으로 20분 이상 차이가 나는 구간별로 분리.
+        """
         df_line_list = []
-        diff = df.std_time.diff()
+        line_list = []
+
+        # 데이터프레임이 비어 있는지 확인
+        if df.empty:
+            st.warning("빈 데이터프레임입니다.")
+            return df_line_list
+
+        # 시간 차이 계산
+        try:
+            diff = df.std_time.diff()
+            if diff.empty or len(diff) != len(df):
+                st.warning("시간 차이를 계산할 수 없습니다.")
+                return df_line_list
+        except Exception as e:
+            st.error(f"시간 차이 계산 중 오류: {e}")
+            return df_line_list
+
+        # 구간별 분리
         for index, row in df.iterrows():
-            # 첫째 간격은 무조건 NaT, 서브 리스트 생성 및 초기값 저장
+            # 유효한 인덱스인지 확인
+            if index >= len(diff):
+                break
+
+            # 첫 번째 행 처리
             if pd.isna(diff.iloc[index]):
-                line_list = []
+                line_list = []  # 새로운 리스트 초기화
                 line_list.append(row)
-            # 간격이 20분 넘어가면 이전리스트까지 갈무리하고, 서브 리스트 생성 초기값 저장
+            # 간격이 20분 이상인 경우
             elif diff.iloc[index] > pd.Timedelta(minutes=20):
-                df_split = pd.DataFrame(line_list)
-                df_line_list.append(df_split)
-                line_list = []
+                if line_list:  # 기존 리스트가 비어있지 않으면 추가
+                    df_split = pd.DataFrame(line_list)
+                    df_line_list.append(df_split)
+                line_list = []  # 새로운 리스트 초기화
                 line_list.append(row)
-            # 그외에는 서브 리스트에 저장
+            # 그 외 경우
             else:
                 line_list.append(row)
 
-        df_split = pd.DataFrame(line_list)
-        df_line_list.append(df_split)
+        # 마지막 리스트 추가
+        if line_list:
+            df_split = pd.DataFrame(line_list)
+            df_line_list.append(df_split)
+
         return df_line_list
 
     def calculate_y_axis_range(self, all_y_axis_values: list):
