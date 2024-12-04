@@ -15,6 +15,17 @@ import pandas as pd
 
 class Portfolio_Channel_Layout():
     def __init__(self):
+        today = date.today()
+        sdate = get_session_state(SESSION_START_DATE)
+        if sdate is None:
+            update_session_state(SESSION_START_DATE, today)
+
+        edate = get_session_state(SESSION_END_DATE)
+        if edate is None:
+            update_session_state(SESSION_END_DATE, today)
+
+
+
         pass
 
     def initialize_session_render(self):
@@ -47,10 +58,15 @@ class Portfolio_Channel_Layout():
         edate = str2datetime(st.session_state['edate'])
 
         channel_healthcare_session_service.request_data(user_uid, sdate, edate)
+
         self.render_layout()
 
 
     def render_layout(self):
+        selected_user = st.radio("유저를 선택하세요:", USER_GROUP, index=0)
+        if selected_user is not None:
+            update_session_state(SESSION_USER_UID, selected_user)
+
         """
         그래프 및 테이블 렌더링 호출
         """

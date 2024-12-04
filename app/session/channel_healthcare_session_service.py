@@ -26,7 +26,6 @@ class ChannelHealthcareSessionService:
         cgm_info = data_agent.get_cgm(user_uid, sdate, edate)
         if cgm_info is None:
             return None
-        st.write( user_uid, sdate, edate)
 
         return pd.DataFrame(cgm_info)
 
@@ -110,27 +109,6 @@ class ChannelHealthcareSessionService:
         else:
             raise ValueError("marker_type must be 'max', 'min', or 'mean'")
 
-    # def split_break_line(self, df:pd.DataFrame):
-    #     df_line_list = []
-    #     diff = df.std_time.diff()
-    #     for index, row in df.iterrows():
-    #         # 첫째 간격은 무조건 NaT, 서브 리스트 생성 및 초기값 저장
-    #         if pd.isna(diff.iloc[index]):
-    #             line_list = []
-    #             line_list.append(row)
-    #         # 간격이 20분 넘어가면 이전리스트까지 갈무리하고, 서브 리스트 생성 초기값 저장
-    #         elif diff.iloc[index] > pd.Timedelta(minutes=20):
-    #             df_split = pd.DataFrame(line_list)
-    #             df_line_list.append(df_split)
-    #             line_list = []
-    #             line_list.append(row)
-    #         # 그외에는 서브 리스트에 저장
-    #         else:
-    #             line_list.append(row)
-    #
-    #     df_split = pd.DataFrame(line_list)
-    #     df_line_list.append(df_split)
-    #     return df_line_list
     def split_break_line(self, df: pd.DataFrame):
         """
         데이터프레임의 std_time을 기준으로 20분 이상 차이가 나는 구간별로 분리.
@@ -238,7 +216,6 @@ class ChannelHealthcareSessionService:
         return dtick_value
 
     def update_navigatation(self):
-        st.write(st.session_state['sdate'], st.session_state['edate'])
         col_period_caption, col_period, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
         with col_period_caption:
             st.write('연속혈당계 사용 시기')
@@ -252,6 +229,7 @@ class ChannelHealthcareSessionService:
                 st.session_state['sdate'] = sdate
                 st.session_state['edate'] = edate
 
+
                 return sdate, edate
 
         with col3:
@@ -262,7 +240,6 @@ class ChannelHealthcareSessionService:
 
                 st.session_state['sdate'] = sdate
                 st.session_state['edate'] = edate
-                st.write('clicked', (sdate), edate)
                 return sdate, edate
 
 

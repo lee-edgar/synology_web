@@ -53,6 +53,10 @@ SESSION_USER_UID = 'user_id'
 DEFAULT_START_DATE = '2023-11-01'
 DEFAULT_END_DATE = '2023-11-02'
 DEFAULT_USER_UID = 187
+USER_GROUP = [
+    187,
+    350
+]
 
 
 MSG_NO_CGM_DATA = '연속혈당 정보가 없습니다. :sunglasses:'

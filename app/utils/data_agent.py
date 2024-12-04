@@ -18,11 +18,9 @@ class DataAgent:
     def get_cgm(self, user_uid: int, sdate: date, edate: date) -> Optional[dict]:
         cgm_list = []
         cgm_info = data_manager.get_cgm(user_uid, sdate, edate)
-        st.write('tar',  sdate, edate)
         if cgm_info is not None:
             cgm_list.extend(cgm_info)
             st.session_state.data_call_session = '저장값 로드'
-            st.write('old', sdate, edate)
             st.success('저장값 로드')
 
 
@@ -30,7 +28,6 @@ class DataAgent:
             cgm = self.update_cgm(user_uid, sdate, edate)
             st.session_state.data_call_session = '새롭게 업데이트'
             st.success('새롭게 업데이트')
-            st.write('new', sdate, edate)
             if cgm is not None:
                 cgm_list.extend(cgm)
         return cgm_list

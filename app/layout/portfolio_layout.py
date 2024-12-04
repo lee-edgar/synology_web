@@ -11,7 +11,6 @@ from app.layout.portfolio_channel_layout import Portfolio_Channel_Layout
 class Portfolio:
 
     def __init__(self):
-        # self.portfolio_channel_layout = Portfolio_Channel_Layout()
 
         pass
 
