@@ -16,11 +16,12 @@ class ChannelHealthcareSessionService:
         pass
 
     def request_data(self, user_uid, sdate, edate):
-        st.success('success request for data')
-        self.get_cgm_data(user_uid, sdate, edate)
-        self.get_meal_data(user_uid, sdate, edate)
-        self.get_exercise_data(user_uid, sdate, edate)
-        self.get_medicine_data(user_uid, sdate)
+        # st.success('success request for data')
+        df = self.get_cgm_data(user_uid, sdate, edate)
+        st.write('df',df)
+        # self.get_meal_data(user_uid, sdate, edate)
+        # self.get_exercise_data(user_uid, sdate, edate)
+        # self.get_medicine_data(user_uid, sdate)
 
     def get_cgm_data(self, user_uid: int, sdate: date, edate:date):
         cgm_info = data_agent.get_cgm(user_uid, sdate, edate)

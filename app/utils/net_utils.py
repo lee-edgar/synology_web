@@ -62,7 +62,7 @@ class NetUtil:
                     return None
 
             if response.status_code == 404:
-                st.warning(f"운동 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
+                # st.warning(f"운동 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
                 logger.info(f"No exercise data found for user_uid {user_uid}. URL: {url}")
                 return None
 
@@ -117,7 +117,7 @@ class NetUtil:
                     return None
 
             elif response.status_code == 404:
-                st.warning(f"복약 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
+                # st.warning(f"복약 데이터가 존재하지 않습니다. (user_uid: {user_uid})")
                 logger.info(f"No exercise data found for user_uid {user_uid}. URL: {url}")
                 return None
 

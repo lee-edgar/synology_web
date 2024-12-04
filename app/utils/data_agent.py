@@ -21,13 +21,13 @@ class DataAgent:
         if cgm_info is not None:
             cgm_list.extend(cgm_info)
             st.session_state.data_call_session = '저장값 로드'
-            st.success('저장값 로드')
+            # st.success('저장값 로드')
 
 
         elif cgm_info is None:
             cgm = self.update_cgm(user_uid, sdate, edate)
             st.session_state.data_call_session = '새롭게 업데이트'
-            st.success('새롭게 업데이트')
+            # st.success('새롭게 업데이트')
             if cgm is not None:
                 cgm_list.extend(cgm)
         return cgm_list

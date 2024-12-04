@@ -15,17 +15,6 @@ import pandas as pd
 
 class Portfolio_Channel_Layout():
     def __init__(self):
-        today = date.today()
-        sdate = get_session_state(SESSION_START_DATE)
-        if sdate is None:
-            update_session_state(SESSION_START_DATE, today)
-
-        edate = get_session_state(SESSION_END_DATE)
-        if edate is None:
-            update_session_state(SESSION_END_DATE, today)
-
-
-
         pass
 
     def initialize_session_render(self):
@@ -52,40 +41,64 @@ class Portfolio_Channel_Layout():
         """
         '''
         initialize_session_state(DEFAULT_SESSION_STATE)
-
-        user_uid = st.session_state['user_uid']
-        sdate = str2datetime(st.session_state['sdate'])
-        edate = str2datetime(st.session_state['edate'])
-
-        channel_healthcare_session_service.request_data(user_uid, sdate, edate)
-
         self.render_layout()
 
 
     def render_layout(self):
-        selected_user = st.radio("유저를 선택하세요:", USER_GROUP, index=0)
-        if selected_user is not None:
-            update_session_state(SESSION_USER_UID, selected_user)
-
         """
         그래프 및 테이블 렌더링 호출
         """
+
         st.markdown(f"{CHANNEL_HEALTHCARE_MARKDOWN}")
 
         # 데이터 시각화 및 테이블 생성
-        select_date = channel_healthcare_session_service.update_navigatation()
+        # select_date = channel_healthcare_session_service.update_navigatation()
+        #
+        # user_uid = st.session_state['user_uid']
+        # if select_date is not None:
+        #     sdate, edate = (select_date)
+        #     st.write('select date', sdate,edate)
+        # else:
+        #     sdate = str2datetime(st.session_state['sdate'])
+        #     edate = str2datetime(st.session_state['sdate']) + timedelta(days=+1)
+        #
+        #
+        self.draw_user_info()
 
-        user_uid = st.session_state['user_uid']
-        if select_date is not None:
-            sdate, edate = (select_date)
-            st.write('select date', sdate,edate)
-        else:
-            sdate = str2datetime(st.session_state['sdate'])
-            edate = str2datetime(st.session_state['sdate']) + timedelta(days=+1)
+        user_uid = get_session_state(SESSION_USER_UID)
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
 
-        self.draw_graph(user_uid, sdate, edate)
-        self.draw_sub_graph(user_uid, sdate, edate)
-        self.draw_table(user_uid, sdate, edate)
+
+        self.draw_graph(user_uid, viz_start_date, viz_end_date)
+        self.draw_sub_graph(user_uid, viz_end_date, viz_end_date)
+        self.draw_table(user_uid, viz_end_date, viz_end_date)
+
+    def draw_user_info(self):
+        selected_user = st.radio("유저를 선택하세요:", USER_GROUP, index=0)
+
+        user_date_range = USER_DATE_RANGES.get(selected_user, {})
+        load_start_date = user_date_range.get("load_start_date")
+        load_end_date = user_date_range.get("load_end_date")
+        viz_start_date = user_date_range.get("viz_start_date")
+        viz_end_date = user_date_range.get("viz_end_date")
+
+
+        if selected_user is not None:
+            update_session_state(SESSION_USER_UID, selected_user)
+            update_session_state(SESSION_LOAD_START_DATE, load_start_date)
+            update_session_state(SESSION_LOAD_END_DATE, load_end_date)
+            update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+            update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+
+
+        st.write('get session', get_session_state(SESSION_USER_UID),  get_session_state(SESSION_LOAD_START_DATE),  get_session_state(SESSION_LOAD_END_DATE),
+                 get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+
+        channel_healthcare_session_service.request_data(selected_user, load_start_date, load_end_date)
+
+
+
 
     def draw_graph(self, user_uid, sdate, edate):
         fig = go.Figure()
@@ -97,9 +110,7 @@ class Portfolio_Channel_Layout():
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
-        # user_uid = st.session_state['user_uid']
-        # sdate = str2datetime(st.session_state['sdate'])
-        # edate = str2datetime(st.session_state['edate'])
+
 
 
         fig = go.Figure()

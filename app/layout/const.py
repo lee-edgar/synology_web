@@ -1,5 +1,7 @@
 from enum import Enum
 import os
+from datetime import datetime, date
+
 
 class Menu(str, Enum):
     profile_group = 'ProfileGroup'
@@ -47,16 +49,35 @@ CHANNEL_HEALTHCARE_MARKDOWN = '채널헬스케어'
 COMMING_SOON = ' # COMMING SOON'
 
 # session state 상수
-SESSION_START_DATE = 'start_date'
-SESSION_END_DATE = 'end_date'
+SESSION_LOAD_START_DATE = 'load_start_date'
+SESSION_LOAD_END_DATE = 'load_end_date'
+SESSION_VIZ_START_DATE = 'viz_start_date'
+SESSION_VIZ_END_DATE = 'viz_end_date'
+
 SESSION_USER_UID = 'user_id'
 DEFAULT_START_DATE = '2023-11-01'
 DEFAULT_END_DATE = '2023-11-02'
 DEFAULT_USER_UID = 187
 USER_GROUP = [
-    187,
-    350
+    350,
+    187
 ]
+
+USER_DATE_RANGES = {
+    350: {
+        "load_start_date": datetime.strptime('2023-07-21T00:00:00', '%Y-%m-%dT%H:%M:%S'),
+        "load_end_date": datetime.strptime('2023-08-03T23:59:59', '%Y-%m-%dT%H:%M:%S'),
+        "viz_start_date": datetime.strptime('2023-07-21T00:00:00', '%Y-%m-%dT%H:%M:%S'),
+        "viz_end_date": datetime.strptime('2023-07-21T23:59:59', '%Y-%m-%dT%H:%M:%S'),
+
+    },
+    187: {
+        "load_start_date": datetime.strptime('2023-11-01T00:00:00', '%Y-%m-%dT%H:%M:%S'),
+        "load_end_date": datetime.strptime('2023-11-14T23:59:59', '%Y-%m-%dT%H:%M:%S'),
+        "viz_start_date": datetime.strptime('2023-11-01T00:00:00', '%Y-%m-%dT%H:%M:%S'),
+        "viz_end_date": datetime.strptime('2023-11-01T23:59:59', '%Y-%m-%dT%H:%M:%S'),
+    }
+}
 
 
 MSG_NO_CGM_DATA = '연속혈당 정보가 없습니다. :sunglasses:'
