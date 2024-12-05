@@ -95,3 +95,18 @@ def get_alltime_date( when: date) -> Tuple[datetime, datetime]:
     fromT = dttime(0, 0, 0)
     toT = dttime(23, 59, 59)
     return datetime.combine(when, fromT), datetime.combine(when, toT)
+
+def format_date_range(start_date: str, end_date: str) -> Tuple[datetime, datetime]:
+    """
+    주어진 date(yyyy/mm/dd)를 datetime(yyyy/mm/dd/T/hh/mm/ss)으로 변경
+    Args:
+        start_date (str): 시작 날짜 (YYYY-MM-DD 형식).
+        end_date (str): 종료 날짜 (YYYY-MM-DD 형식).
+    Returns:
+        Tuple[datetime, datetime]:
+            - 시작 날짜 (T00:00:00 포함).
+            - 종료 날짜 (T23:59:59 포함).
+    """
+    start_datetime = datetime.strptime(f"{start_date}T00:00:00", "%Y-%m-%dT%H:%M:%S")
+    end_datetime = datetime.strptime(f"{end_date}T23:59:59", "%Y-%m-%dT%H:%M:%S")
+    return start_datetime, end_datetime

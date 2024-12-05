@@ -50,84 +50,14 @@ class Portfolio_Channel_Layout():
         """
 
         st.markdown(f"{CHANNEL_HEALTHCARE_MARKDOWN}")
-
-        self.draw_user_info()
-        # channel_healthcare_session_service.update_navigatation()
-
+        channel_healthcare_session_service.draw_user_navigation()
         user_uid = get_session_state(SESSION_USER_UID)
         viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
         viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
 
-
         self.draw_graph(user_uid, viz_start_date, viz_end_date)
         self.draw_sub_graph(user_uid, viz_start_date, viz_end_date)
         self.draw_table(user_uid, viz_start_date, viz_end_date)
-
-    def draw_user_info(self):
-
-        col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
-
-
-        with col2 :
-            selected_user = st.selectbox(" 유저 선택 ", USER_GROUP, index=0,  label_visibility='collapsed')
-
-            user_date_range = USER_DATE_RANGES.get(selected_user, {})
-            load_start_date = user_date_range.get("load_start_date")
-            load_end_date = user_date_range.get("load_end_date")
-            viz_start_date = user_date_range.get("viz_start_date")
-            viz_end_date = user_date_range.get("viz_end_date")
-
-            if get_session_state(SESSION_USER_UID) != selected_user:
-                update_session_state(SESSION_USER_UID, selected_user)
-                update_session_state(SESSION_LOAD_START_DATE, load_start_date)
-                update_session_state(SESSION_LOAD_END_DATE, load_end_date)
-                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
-
-            # st.write('get session', get_session_state(SESSION_USER_UID),  get_session_state(SESSION_LOAD_START_DATE),  get_session_state(SESSION_LOAD_END_DATE),
-            #          get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-            channel_healthcare_session_service.request_data(selected_user, load_start_date, load_end_date)
-
-        # channel_healthcare_session_service.update_navigatation()
-
-        # 현재 viz_start_date와 viz_end_date를 세션에서 가져오기
-        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
-
-        # "이전" 버튼 클릭 시 처리
-        with col3:
-            if st.button(":arrow_backward: 이전", use_container_width=True):
-                # 날짜를 하루 전으로 이동
-                viz_start_date -= timedelta(days=1)
-                viz_end_date -= timedelta(days=1)
-
-                # 변경된 날짜를 세션 상태에 업데이트
-                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
-
-        # "다음" 버튼 클릭 시 처리
-        with col5:
-            if st.button("다음 :arrow_forward:", use_container_width=True):
-                # 날짜를 하루 후로 이동
-                viz_start_date += timedelta(days=1)
-                viz_end_date += timedelta(days=1)
-
-                # 변경된 날짜를 세션 상태에 업데이트
-                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
-
-        # 현재 날짜 출력
-        with col4:
-            clander_date = st.date_input('날짜 선택',
-                          (viz_start_date, viz_end_date),
-                          label_visibility='collapsed')
-
-            if clander_date[0] <= clander_date[1]:
-                sdate, edate = clander_date[0], clander_date[1]
-
-
-
-
 
 
     def draw_graph(self, user_uid, sdate, edate):
@@ -141,9 +71,9 @@ class Portfolio_Channel_Layout():
     def draw_sub_graph(self,  user_uid, sdate, edate):
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_exercise(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
+        # self.plot_exercise(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
         self.plot_meal_zone(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_medicine(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE))
+        # self.plot_medicine(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE))
         st.plotly_chart(fig, use_container_width=True)
 
 

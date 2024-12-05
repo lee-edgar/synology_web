@@ -62,6 +62,10 @@ USER_GROUP = [
     350,
     187
 ]
+SELECT_MODE = [
+    "Select",
+    "All"
+]
 
 USER_DATE_RANGES = {
     350: {
