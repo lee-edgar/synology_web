@@ -8,7 +8,7 @@ from streamlit_pdf_viewer import pdf_viewer
 from datetime import date, datetime, timedelta
 from app.session.channel_healthcare_session_service import channel_healthcare_session_service
 from app.utils.streamlit_utils import get_session_state, update_session_state, initialize_session_state, str2datetime, \
-    str2datetime_strptim
+    str2datetime_strptim, format_date_range
 import plotly.graph_objects as go
 import pandas as pd
 
@@ -133,11 +133,19 @@ class Portfolio_Channel_Layout():
         # 현재 날짜 출력
         with col4:
             clander_date = st.date_input('날짜 선택',
-                          (viz_start_date, viz_end_date),
+                          (viz_start_date.date(), viz_end_date.date()),
                           label_visibility='collapsed')
 
             if clander_date[0] <= clander_date[1]:
-                sdate, edate = clander_date[0], clander_date[1]
+                # sdate, edate = clander_date[0], clander_date[1]
+                new_viz_start_date, new_viz_end_date = format_date_range(clander_date[0], clander_date[1])
+
+                # 선택된 날짜 범위가 load_start_date ~ load_end_date 범위를 초과하지 않도록 제한
+                if new_viz_start_date >= load_start_date and new_viz_end_date <= load_end_date:
+                    update_session_state(SESSION_VIZ_START_DATE, new_viz_start_date)
+                    update_session_state(SESSION_VIZ_END_DATE, new_viz_end_date)
+                else:
+                    error_message = (f"선택한 날짜는 허용 범위를 초과했습니다. {load_start_date.date()} ~ {load_end_date.date()}")
 
         if error_message is not None:
             st.error(f'{error_message}')
