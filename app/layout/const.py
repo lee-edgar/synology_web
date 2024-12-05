@@ -67,6 +67,10 @@ SELECT_MODE = [
     "All"
 ]
 
+SELECT_MODE = [
+    "Select",
+    "All"
+]
 USER_DATE_RANGES = {
     350: {
         "load_start_date": datetime.strptime('2023-07-21T00:00:00', '%Y-%m-%dT%H:%M:%S'),

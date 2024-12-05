@@ -199,101 +199,40 @@ class ChannelHealthcareSessionService:
 
         return dtick_value
 
-    def draw_user_navigation(self):
-        col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
+    def update_navigatation(self):
+        __, __, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
 
-        error_message = None  # 에러 메시지 변수 초기화
+        # 현재 viz_start_date와 viz_end_date를 세션에서 가져오기
+        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
 
-        # 유저 선택
-        with col2:
-            selected_user = st.selectbox("유저 선택", USER_GROUP, index=0, label_visibility='collapsed')
+        # "이전" 버튼 클릭 시 처리
+        with col1:
+            if st.button(":arrow_backward: 이전", use_container_width=True):
+                # 날짜를 하루 전으로 이동
+                viz_start_date -= timedelta(days=1)
+                viz_end_date -= timedelta(days=1)
 
-            user_date_range = USER_DATE_RANGES.get(selected_user, {})
-            load_start_date = user_date_range.get("load_start_date")
-            load_end_date = user_date_range.get("load_end_date")
-            viz_start_date = user_date_range.get("viz_start_date")
-            viz_end_date = user_date_range.get("viz_end_date")
-
-            # 기본값 확인 및 설정
-            if load_start_date is None or load_end_date is None:
-                st.error("유효한 날짜 범위가 설정되지 않았습니다. USER_DATE_RANGES를 확인하세요.")
-                return
-
-            if viz_start_date is None or viz_end_date is None:
-                viz_start_date = load_start_date
-                viz_end_date = load_end_date
-
-            if get_session_state(SESSION_USER_UID) != selected_user:
-                update_session_state(SESSION_USER_UID, selected_user)
-                update_session_state(SESSION_LOAD_START_DATE, load_start_date)
-                update_session_state(SESSION_LOAD_END_DATE, load_end_date)
+                # 변경된 날짜를 세션 상태에 업데이트
                 update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
                 update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
 
-                # 데이터 요청
-                self.request_data(selected_user, load_start_date, load_end_date)
-
-        # 날짜 이동 처리
+        # "다음" 버튼 클릭 시 처리
         with col3:
-            if st.button(":arrow_backward: 이전", use_container_width=True):
-                # 날짜를 하루 전으로 이동
-                new_viz_start_date = viz_start_date - timedelta(days=1)
-                new_viz_end_date = viz_end_date - timedelta(days=1)
-
-                # 이동한 날짜가 load_start_date와 load_end_date 범위 내에 있도록 제한
-                if new_viz_start_date >= load_start_date:
-                    viz_start_date = new_viz_start_date
-                    viz_end_date = new_viz_end_date
-                    update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                    update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
-                else:
-                    error_message = (f"더 이상 이전 날짜로 이동할 수 없습니다. {load_start_date} ~ {load_end_date}")
-
-        with col5:
             if st.button("다음 :arrow_forward:", use_container_width=True):
                 # 날짜를 하루 후로 이동
-                new_viz_start_date = viz_start_date + timedelta(days=1)
-                new_viz_end_date = viz_end_date + timedelta(days=1)
+                viz_start_date += timedelta(days=1)
+                viz_end_date += timedelta(days=1)
 
-                # 이동한 날짜가 load_start_date와 load_end_date 범위 내에 있도록 제한
-                if new_viz_end_date <= load_end_date:
-                    viz_start_date = new_viz_start_date
-                    viz_end_date = new_viz_end_date
-                    update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                    update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
-                else:
-                    error_message = (f"더 이상 다음 날짜로 이동할 수 없습니다. {load_start_date} ~ {load_end_date}")
+                # 변경된 날짜를 세션 상태에 업데이트
+                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
 
-        # 날짜 선택 처리
-        with col4:
-            clander_date = st.date_input(
-                '날짜 선택',
-                (viz_start_date.date(), viz_end_date.date()),
-                label_visibility='collapsed'
-            )
-
-            # 선택된 날짜 범위가 올바른지 확인
-            if clander_date[0] <= clander_date[1]:
-                new_viz_start_date, new_viz_end_date = format_date_range(clander_date[0], clander_date[1])
-
-                # 선택된 날짜 범위가 load_start_date ~ load_end_date 범위를 초과하지 않도록 제한
-                if new_viz_start_date >= load_start_date and new_viz_end_date <= load_end_date:
-                    update_session_state(SESSION_VIZ_START_DATE, new_viz_start_date)
-                    update_session_state(SESSION_VIZ_END_DATE, new_viz_end_date)
-                else:
-                    error_message = (f"선택한 날짜는 허용 범위를 초과했습니다. {load_start_date.date()} ~ {load_end_date.date()}")
-
-        if error_message:
-            st.error(error_message)
-
-        with col1:
-            select_mode = st.radio("조회 모드 선택", SELECT_MODE, index=0, label_visibility='collapsed')
-
-        if select_mode == "All":
-            # All 모드: 전체 데이터 범위로 설정
-            update_session_state(SESSION_VIZ_START_DATE, load_start_date)
-            update_session_state(SESSION_VIZ_END_DATE, load_end_date)
-
+        # 현재 날짜 출력
+        with col2:
+            st.date_input('날짜 선택',
+                          (viz_start_date, viz_end_date),
+                          label_visibility='collapsed')
 
 
 channel_healthcare_session_service: ChannelHealthcareSessionService = ChannelHealthcareSessionService()
