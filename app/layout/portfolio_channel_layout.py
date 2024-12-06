@@ -58,8 +58,10 @@ class Portfolio_Channel_Layout():
         user_uid = get_session_state(SESSION_USER_UID)
         viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
         viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+        load_start_date = get_session_state(SESSION_LOAD_START_DATE)
+        load_end_date= get_session_state(SESSION_LOAD_END_DATE)
 
-
+        self.draw_allday_graph(user_uid, load_start_date, load_end_date )
         self.draw_graph(user_uid, viz_start_date, viz_end_date)
         self.draw_sub_graph(user_uid, viz_start_date, viz_end_date)
         self.draw_table(user_uid, viz_start_date, viz_end_date)
@@ -150,22 +152,88 @@ class Portfolio_Channel_Layout():
         if error_message is not None:
             st.error(f'{error_message}')
 
+    # def draw_allday_graph(self, user_uid, sdate, edate):
+    #     fig = go.Figure()
+    #     self.plot_cgm(fig, user_uid, sdate, edate, 'all')
+    #     # self.plot_meal_zone(fig, user_uid, sdate, edate, 'all')
+    #     self.plot_meal(fig, user_uid, sdate, edate, 'all')
+    #
+    #     st.plotly_chart(fig , use_container_width=True)
+    def draw_allday_graph(self, user_uid, sdate, edate):
+        """
+        Draw all-day graph with selectable meal visualization modes.
+        """
+
+        st.markdown(
+            """
+            <style>
+            .radio-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                margin-bottom: 0px; /* 여백 최소화 */
+            }
+            .radio-container label {
+                margin-right: 20px; /* 버튼 간격 */
+                font-size: 14px; /* 폰트 크기 */
+            }
+            .chart-container {
+                height: 500px; /* 그래프 높이 설정 */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+        col1, col2 = st.columns((1,9))
+        # Streamlit UI for selecting meal visualization mode
+        with col1:
+            st.write(' ')
+            st.write(' ')
+            st.write(' ')
+            st.write(' ')
+            st.write(' ')
+            st.write(' ')
+
+            meal_mode = st.radio(
+                "Select visualization type:",
+                options=["Meal", "Meal Zone"],
+                index=0,  # Default to "Meal"
+                horizontal=True  # Set the radio buttons horizontally
+
+            )
+        with col2:
+            fig = go.Figure()
+            self.plot_cgm(fig, user_uid, sdate, edate, 'all')
+
+            if meal_mode == "Meal":
+                self.plot_meal(fig, user_uid, sdate, edate, 'all')
+            elif meal_mode == "Meal Zone":
+                self.plot_meal_zone(fig, user_uid, sdate, edate, 'all')
+            # elif meal_mode == 'ex':
+            #     self.plot_exercise(fig, user_uid, sdate, edate, 'all')
+
+            st.plotly_chart(fig, use_container_width=True)
 
 
     def draw_graph(self, user_uid, sdate, edate):
         fig = go.Figure()
-        self.plot_cgm(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_exercise(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_meal(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_medicine(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE))
+        self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
+        self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_meal(fig, user_uid, sdate, edate, 'selected')
+        self.plot_medicine(fig, user_uid, sdate)
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
         fig = go.Figure()
-        self.plot_cgm(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_exercise(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_meal_zone(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE), get_session_state(SESSION_VIZ_END_DATE))
-        self.plot_medicine(fig, user_uid, get_session_state(SESSION_VIZ_START_DATE))
+        self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
+        # self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
+        # self.plot_medicine(fig, user_uid, sdate)
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -202,20 +270,83 @@ class Portfolio_Channel_Layout():
             )
 
 
+    # 원본
+    # def plot_cgm(self, fig, user_uid:int, sdate:datetime, edate:datetime, mode:str):
+    #     all_y_axis_values = []
+    #     max_bg = []
+    #
+    #     df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
+    #     df['std_time'] = pd.to_datetime(df['std_time'])
+    #
+    #     if mode == 'selected':
+    #         df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
+    #         height = 500
+    #     elif mode == "all":
+    #         height = 300
+    #         pass
+    #     else:
+    #         raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+    #
+    #     df = df[['std_time', 'bg']]
+    #
+    #     if df is None or df.empty:
+    #         st.warning(MSG_NO_CGM_DATA)
+    #         return None
+    #
+    #
+    #     df_line_list = channel_healthcare_session_service.split_break_line(df)
+    #     if not df_line_list:
+    #         st.warning("No segments found in split_break_line.")
+    #         return
+    #     for df_list in df_line_list:
+    #         all_y_axis_values.extend(df_list.bg.tolist())
+    #         fig.add_trace(go.Scatter(x=df_list.std_time, y=df_list.bg,  mode='lines', line=dict(color='blue')))
+    #
+    #     y_axis_range = channel_healthcare_session_service.calculate_y_axis_range(all_y_axis_values, mode)
+    #     x_axis_dtick = channel_healthcare_session_service.calculate_x_axis_range(
+    #         pd.to_datetime(get_session_state(SESSION_VIZ_START_DATE)),
+    #         pd.to_datetime(get_session_state(SESSION_VIZ_END_DATE)),
+    #         mode
+    #     )
+    #
+    #     channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='max', color='red', label='Max BG')
+    #     channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='min', color='green', label='Min BG')
+    #     channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='mean', color='purple', label='Mean BG')
+    #
+    #     fig.add_hrect(y0=70, y1=180, fillcolor='yellow', opacity=0.09)
+    #     fig.update_layout(
+    #         height=height,
+    #         title={
+    #             "text": "<span style='font-size: 14px; color: gray'>라벤더 영역 : 식사 데이터, 초록색 영역 : 운동 데이터, 붉은색 영역 : 투약 데이터 </span>",
+    #             "y": 0.95,
+    #             "x": 0.025,
+    #             "xanchor": "left",
+    #             "yanchor": "top"
+    #         },
+    #         yaxis=dict(range=y_axis_range, tickmode='linear', tick0=0, dtick=20, fixedrange=True),
+    #         xaxis=dict(tickangle=0, automargin=True, dtick=x_axis_dtick, tickformat='%H시<br>%m-%d', hoverformat='%H:%M<br>%y-%m-%d'),
+    #         hovermode='x unified', showlegend=False)
+    #     fig.update_layout(yaxis=dict(range=y_axis_range), xaxis=dict(dtick=x_axis_dtick))
 
-    def plot_cgm(self, fig, user_uid:int, sdate:datetime, edate:datetime):
+    def plot_cgm(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
         all_y_axis_values = []
-        max_bg = []
 
         df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
         df['std_time'] = pd.to_datetime(df['std_time'])
-        df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
+
+        if mode == 'selected':
+            df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
+            height = 400
+        elif mode == "all":
+            height = 300
+        else:
+            raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+
         df = df[['std_time', 'bg']]
 
-        if df is None or df.empty:
+        if df.empty:
             st.warning(MSG_NO_CGM_DATA)
             return None
-
 
         df_line_list = channel_healthcare_session_service.split_break_line(df)
         if not df_line_list:
@@ -223,32 +354,42 @@ class Portfolio_Channel_Layout():
             return
         for df_list in df_line_list:
             all_y_axis_values.extend(df_list.bg.tolist())
-            fig.add_trace(go.Scatter(x=df_list.std_time, y=df_list.bg,  mode='lines', line=dict(color='blue')))
+            fig.add_trace(go.Scatter(x=df_list.std_time, y=df_list.bg, mode='lines', line=dict(color='blue')))
 
-        y_axis_range = channel_healthcare_session_service.calculate_y_axis_range(all_y_axis_values)
+        y_axis_range = channel_healthcare_session_service.calculate_y_axis_range(all_y_axis_values, mode)
         x_axis_dtick = channel_healthcare_session_service.calculate_x_axis_range(
             pd.to_datetime(get_session_state(SESSION_VIZ_START_DATE)),
-            pd.to_datetime(get_session_state(SESSION_VIZ_END_DATE))
+            pd.to_datetime(get_session_state(SESSION_VIZ_END_DATE)),
+            mode
         )
 
-        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='max', color='red', label='Max BG')
-        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='min', color='green', label='Min BG')
-        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='mean', color='purple', label='Mean BG')
+        # 일별 또는 전체 최대값 추가
+        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='max', color='red',
+                                                      label='Max BG', mode=mode)
+        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='min', color='green',
+                                                      label='Min BG', mode=mode)
+        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='mean', color='purple',
+                                                      label='Mean BG', mode=mode)
 
         fig.add_hrect(y0=70, y1=180, fillcolor='yellow', opacity=0.09)
+
         fig.update_layout(
-            title={
-                "text": "<span style='font-size: 14px; color: gray'>라벤더 영역 : 식사 데이터, 초록색 영역 : 운동 데이터, 붉은색 영역 : 투약 데이터 </span>",
-                "y": 0.95,
-                "x": 0.025,
-                "xanchor": "left",
-                "yanchor": "top"
-            },
+            height=height,
+            # title={
+            #     "text": "<span style='font-size: 14px; color: gray'>초록색 영역 : 운동 데이터, 붉은색 영역 : 식사 데이터 </span>",
+            #     "y": 0.95,
+            #     "x": 0.025,
+            #     "xanchor": "left",
+            #     "yanchor": "top"
+            # },
             yaxis=dict(range=y_axis_range, tickmode='linear', tick0=0, dtick=20, fixedrange=True),
-            xaxis=dict(tickangle=0, automargin=True, dtick=x_axis_dtick, tickformat='%H시<br>%m-%d', hoverformat='%H:%M<br>%y-%m-%d'),
-            hovermode='x unified', showlegend=False)
+            xaxis=dict(tickangle=0, automargin=True, dtick=x_axis_dtick, tickformat='%H시<br>%m-%d',
+                       hoverformat='%H:%M<br>%y-%m-%d'),
+            hovermode='x unified', showlegend=False
+        )
         fig.update_layout(yaxis=dict(range=y_axis_range), xaxis=dict(dtick=x_axis_dtick))
 
+    # 원본
     def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
         df = channel_healthcare_session_service.get_exercise_data(user_uid, sdate, edate)
         viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
@@ -267,8 +408,115 @@ class Portfolio_Channel_Layout():
             ex_end = str(row['end_time'])
             fig.add_vrect(x0=ex_start, x1=ex_end, fillcolor='rgba(0, 255, 100, 0.5)', line_width=0.3,
                           annotation_position='top left', annotation_text="운동")
+            
+    # 운동 부분 데이터 업데이트 확인 후 적용
+    # def plot_exercise(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
+    #     """
+    #     운동 데이터를 시각화하는 함수.
+    #
+    #     Args:
+    #         fig: Plotly Figure 객체
+    #         user_uid: 사용자 ID
+    #         sdate: 시작 날짜
+    #         edate: 종료 날짜
+    #         mode: 'all' 또는 'selected'로 동작을 분기
+    #     """
+    #     df = channel_healthcare_session_service.get_exercise_data(user_uid, sdate, edate)
+    #     st.write('Original df', df)
+    #
+    #     if df is None or df.empty:
+    #         st.warning("No exercise data available for the selected range.")
+    #         return None
+    #
+    #     # 운동 데이터 필터링
+    #     df = df[['start_time', 'end_time']]
+    #     df['start_time'] = pd.to_datetime(df['start_time'])
+    #     df['end_time'] = pd.to_datetime(df['end_time'])
+    #
+    #     if mode == "selected":
+    #         # SESSION_VIZ_START_DATE와 SESSION_VIZ_END_DATE로 필터링
+    #         viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+    #         viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+    #         df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+    #     elif mode == "all":
+    #         # 전체 기간의 운동 데이터를 유지
+    #         df = df[(df['start_time'] >= sdate) & (df['end_time'] <= edate)]
+    #     else:
+    #         raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+    #
+    #     st.write(f"Filtered df for mode={mode}", df)
+    #
+    #     if df.empty:
+    #         st.warning(f"No exercise data after filtering for mode: {mode}")
+    #         return None
+    #
+    #     # Plotting
+    #     for index, row in df.iterrows():
+    #         ex_start = str(row['start_time'])
+    #         ex_end = str(row['end_time'])
+    #         fig.add_vrect(
+    #             x0=ex_start,
+    #             x1=ex_end,
+    #             fillcolor='rgba(0, 255, 100, 0.5)' if mode == "selected" else 'rgba(0, 255, 100, 0.2)',
+    #             line_width=0.3,
+    #             annotation_position='top left',
+    #             annotation_text="운동" if mode == "selected" else f"운동 ({row['start_time'].strftime('%Y-%m-%d')})"
+    #         )
 
-    def plot_meal(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+    # 원본
+    # def plot_meal(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+    #     # 데이터를 가져오고 필터링
+    #     df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
+    #
+    #     if df is None or df.empty:
+    #         st.warning("No meal data available for the selected range.")
+    #         return None
+    #
+    #     # 필터 적용: SESSION_VIZ_START_DATE ~ SESSION_VIZ_END_DATE
+    #     viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+    #     viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+    #
+    #     df['start_time'] = pd.to_datetime(df['start_time'])
+    #     df['end_time'] = pd.to_datetime(df['end_time'])
+    #     df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+    #
+    #     if df.empty:
+    #         st.warning("No meal data after filtering by visualization range.")
+    #         return None
+    #
+    #     # 필요한 열만 선택
+    #     df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+    #
+    #     # 그래프에 데이터를 추가
+    #     for index, row in df.iterrows():
+    #         start_time_dt = row['start_time']
+    #         end_time_dt = row['end_time']
+    #         midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
+    #
+    #         start_time = start_time_dt.strftime('%Y-%m-%d %H:%M:%S')
+    #         end_time = end_time_dt.strftime('%Y-%m-%d %H:%M:%S')
+    #         meal_div_code = str(row['meal_div_code'])
+    #
+    #         # 그래프에 영역 추가
+    #         fig.add_vrect(
+    #             x0=start_time,
+    #             x1=end_time,
+    #             fillcolor='rgba(255, 0, 0, 0.2)',
+    #             line_width=0.3,
+    #             annotation_position='bottom left',
+    #             annotation_text=meal_div_code
+    #         )
+    def plot_meal(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
+        """
+        Meal Plot Function with mode parameter.
+
+        Args:
+            fig: Plotly figure object.
+            user_uid: User ID for filtering data.
+            sdate: Start date for data filtering.
+            edate: End date for data filtering.
+            mode: 'all' for daily meal zones, 'selected' for specific date range.
+        """
         # 데이터를 가져오고 필터링
         df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
 
@@ -276,99 +524,193 @@ class Portfolio_Channel_Layout():
             st.warning("No meal data available for the selected range.")
             return None
 
-        # 필터 적용: SESSION_VIZ_START_DATE ~ SESSION_VIZ_END_DATE
-        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
-
         df['start_time'] = pd.to_datetime(df['start_time'])
         df['end_time'] = pd.to_datetime(df['end_time'])
-        df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
 
-        if df.empty:
-            st.warning("No meal data after filtering by visualization range.")
-            return None
+        # mode=all: 일별로 그룹화하여 처리
+        if mode == 'all':
+            daily_grouped = df.groupby(df['start_time'].dt.date)
+            for date, group in daily_grouped:
+                for _, row in group.iterrows():
+                    start_time_dt = row['start_time']
+                    end_time_dt = row['end_time']
 
-        # 필요한 열만 선택
-        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+                    # 식사 영역 추가
+                    fig.add_vrect(
+                        x0=start_time_dt,
+                        x1=end_time_dt,
+                        fillcolor='rgba(255, 0, 0, 0.2)',
+                        line_width=0.3,
+                    )
+        # mode=selected: 기존 로직 유지
+        elif mode == 'selected':
+            viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+            viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+            df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
 
-        # 그래프에 데이터를 추가
-        for index, row in df.iterrows():
-            start_time_dt = row['start_time']
-            end_time_dt = row['end_time']
-            midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
+            if df.empty:
+                st.warning("No meal data after filtering by visualization range.")
+                return None
 
-            start_time = start_time_dt.strftime('%Y-%m-%d %H:%M:%S')
-            end_time = end_time_dt.strftime('%Y-%m-%d %H:%M:%S')
-            meal_div_code = str(row['meal_div_code'])
+            # 필요한 열만 선택
+            df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
 
-            # 그래프에 영역 추가
-            fig.add_vrect(
-                x0=start_time,
-                x1=end_time,
-                fillcolor='rgba(255, 0, 0, 0.2)',
-                line_width=0.3,
-                annotation_position='bottom left',
-                annotation_text=meal_div_code
-            )
+            # 그래프에 데이터를 추가
+            for _, row in df.iterrows():
+                start_time_dt = row['start_time']
+                end_time_dt = row['end_time']
+                meal_div_code = str(row['meal_div_code'])
 
-    def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+                # 영역 추가
+                fig.add_vrect(
+                    x0=start_time_dt,
+                    x1=end_time_dt,
+                    fillcolor='rgba(255, 0, 0, 0.2)',
+                    line_width=0.3,
+                    annotation_position='bottom left',
+                    annotation_text=meal_div_code
+                )
+        else:
+            raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+
+    # 원본
+    # def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime):
+    #     df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
+    #     if df is None or df.empty:
+    #         st.warning("No meal data available for the selected range.")
+    #         return None
+    #
+    #     df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+    #
+    #     viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+    #     viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+    #
+    #     df['start_time'] = pd.to_datetime(df['start_time'])
+    #     df['end_time'] = pd.to_datetime(df['end_time'])
+    #     df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+    #
+    #
+    #
+    #     if df is None or df.empty:
+    #         return None
+    #
+    #     for index, row in df.iterrows():
+    #         start_time_dt = pd.to_datetime(row['start_time'])
+    #         end_time_dt = pd.to_datetime(row['end_time'])
+    #         midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
+    #         meal_zone_time = start_time_dt + timedelta(hours=4)  # 4시간 더하기
+    #
+    #         # meal_zone_time이 edate를 초과하면 제외
+    #         if meal_zone_time.date() > edate.date():
+    #             continue
+    #
+    #         start_time = str(row['start_time'])
+    #         end_time = str(row['end_time'])
+    #         meal_div_code = str(row['meal_div_code'])
+    #         top_bg = str(row['top_bg'])
+    #         tir = str(row['tir'])
+    #
+    #         fig.add_vrect(
+    #             x0=start_time,
+    #             x1=meal_zone_time,
+    #             fillcolor='rgba(255, 0, 0, 0.2)',
+    #             line_width=0.3,
+    #         )
+    #
+    #         fig.add_trace(go.Scatter(
+    #             x=[start_time_dt],  # 중간값에 마커 추가
+    #             y=[1],  # 고정된 Y 값
+    #             mode='markers+text',
+    #             marker=dict(size=20, color='black', symbol='circle'),  # 검은색 마커
+    #             text=[f"{meal_div_code}<br>"
+    #                   f"Start: {start_time}<br>"
+    #                   f"End: {end_time}<br>"
+    #                   f"TOP_BG: {top_bg}<br>"
+    #                   f"TIR: {tir}<br>"],
+    #             textposition="top center",  # 텍스트 위치 설정
+    #             hoverinfo='text',
+    #             name='Meal Info'
+    #         ))
+    def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
+        """
+        Meal Zone Plot Function with mode parameter.
+
+        Args:
+            fig: Plotly figure object.
+            user_uid: User ID for filtering data.
+            sdate: Start date for data filtering.
+            edate: End date for data filtering.
+            mode: 'all' for daily meal zones, 'selected' for specific date range.
+        """
         df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
         if df is None or df.empty:
             st.warning("No meal data available for the selected range.")
             return None
 
         df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
-
-        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
-
         df['start_time'] = pd.to_datetime(df['start_time'])
         df['end_time'] = pd.to_datetime(df['end_time'])
-        df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
 
+        if mode == 'selected':
+            viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+            viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+            df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
 
-
-        if df is None or df.empty:
+        if df.empty:
             return None
 
-        for index, row in df.iterrows():
-            start_time_dt = pd.to_datetime(row['start_time'])
-            end_time_dt = pd.to_datetime(row['end_time'])
-            midpoint = start_time_dt + (end_time_dt - start_time_dt) / 2
-            meal_zone_time = start_time_dt + timedelta(hours=4)  # 4시간 더하기
+        # mode=all: Add vrect for each meal zone in daily intervals
+        if mode == 'all':
+            daily_grouped = df.groupby(df['start_time'].dt.date)  # Group by date
+            for date, group in daily_grouped:
+                for _, row in group.iterrows():
+                    start_time_dt = pd.to_datetime(row['start_time'])
+                    meal_zone_time = start_time_dt + timedelta(hours=4)  # 4-hour meal zone
 
-            # meal_zone_time이 edate를 초과하면 제외
-            if meal_zone_time.date() > edate.date():
-                continue
+                    # Add vrect only if within the global date range
+                    if meal_zone_time <= edate:
+                        fig.add_vrect(
+                            x0=start_time_dt,
+                            x1=meal_zone_time,
+                            fillcolor='rgba(255, 0, 0, 0.2)',
+                            line_width=0.3,
+                        )
 
-            start_time = str(row['start_time'])
-            end_time = str(row['end_time'])
-            meal_div_code = str(row['meal_div_code'])
-            top_bg = str(row['top_bg'])
-            tir = str(row['tir'])
+        # mode=selected: Plot meal zones in the selected date range
+        elif mode == 'selected':
+            for _, row in df.iterrows():
+                start_time_dt = pd.to_datetime(row['start_time'])
+                end_time_dt = pd.to_datetime(row['end_time'])
+                meal_zone_time = start_time_dt + timedelta(hours=4)  # 4-hour meal zone
 
-            fig.add_vrect(
-                x0=start_time,
-                x1=meal_zone_time,
-                fillcolor='rgba(255, 0, 0, 0.2)',
-                line_width=0.3,
-            )
+                # Add vrect for the selected date range
+                if meal_zone_time.date() <= edate.date():
+                    fig.add_vrect(
+                        x0=start_time_dt,
+                        x1=meal_zone_time,
+                        fillcolor='rgba(255, 0, 0, 0.2)',
+                        line_width=0.3,
+                    )
 
-            fig.add_trace(go.Scatter(
-                x=[start_time_dt],  # 중간값에 마커 추가
-                y=[1],  # 고정된 Y 값
-                mode='markers+text',
-                marker=dict(size=20, color='black', symbol='circle'),  # 검은색 마커
-                text=[f"{meal_div_code}<br>"
-                      f"Start: {start_time}<br>"
-                      f"End: {end_time}<br>"
-                      f"TOP_BG: {top_bg}<br>"
-                      f"TIR: {tir}<br>"],
-                textposition="top center",  # 텍스트 위치 설정
-                hoverinfo='text',
-                name='Meal Info'
-            ))
-
+                    # Add meal info marker
+                    fig.add_trace(go.Scatter(
+                        x=[start_time_dt],
+                        y=[1],  # Fixed Y value
+                        mode='markers+text',
+                        marker=dict(size=20, color='black', symbol='circle'),
+                        text=[
+                            f"{row['meal_div_code']}<br>"
+                            f"Start: {row['start_time']}<br>"
+                            f"End: {row['end_time']}<br>"
+                            f"TOP_BG: {row['top_bg']}<br>"
+                            f"TIR: {row['tir']}<br>"
+                        ],
+                        textposition="top center",
+                        hoverinfo='text',
+                        name='Meal Info'
+                    ))
+        else:
+            raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
 
     def plot_medicine(self, fig, user_uid: int, sdate: datetime):
         '''

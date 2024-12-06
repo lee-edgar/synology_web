@@ -56,38 +56,185 @@ class ChannelHealthcareSessionService:
 
         return filtered_df
 
-
-    def add_marker(self, fig, df, column: str, marker_type: str, color: str, label: str):
+    # 원본
+    # def add_marker(self, fig, df, column: str, marker_type: str, color: str, label: str):
+    #     """
+    #     최대값, 최소값, 또는 평균값을 그래프에 추가하는 함수.
+    #
+    #     Args:
+    #         fig: Plotly Figure 객체
+    #         df (pd.DataFrame): 데이터프레임 (시간 및 값 포함)
+    #         column (str): 값을 찾을 열 이름
+    #         marker_type (str): 'max', 'min', 또는 'mean' (최대값, 최소값, 평균값)
+    #         color (str): 마커 또는 선의 색상
+    #         label (str): 그래프에 표시할 라벨 ('Max BG', 'Min BG', 또는 'Mean BG')
+    #     """
+    #     if marker_type == 'max':
+    #         value = df[column].max()
+    #         row = df[df[column] == value].iloc[0]
+    #         time = row['std_time']
+    #         # 최대값 마커 추가
+    #         fig.add_trace(go.Scatter(
+    #             x=[time],
+    #             y=[value],
+    #             mode='markers+text',
+    #             marker=dict(color=color, size=10),
+    #             text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+    #             textposition="top center",
+    #             name=label
+    #         ))
+    #     elif marker_type == 'min':
+    #         value = df[column].min()
+    #         row = df[df[column] == value].iloc[0]
+    #         time = row['std_time']
+    #         # 최소값 마커 추가
+    #         fig.add_trace(go.Scatter(
+    #             x=[time],
+    #             y=[value],
+    #             mode='markers+text',
+    #             marker=dict(color=color, size=10),
+    #             text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+    #             textposition="top center",
+    #             name=label
+    #         ))
+    #     elif marker_type == 'mean':
+    #         value = df[column].mean()
+    #         # 평균값 수평선 추가
+    #         fig.add_hline(
+    #             y=value,
+    #             line=dict(color=color, dash='dash', width=2),
+    #             annotation_text=f"{label}: {value:.2f}",
+    #             annotation_position="top left"
+    #         )
+    #     else:
+    #         raise ValueError("marker_type must be 'max', 'min', or 'mean'")
+    # def add_marker(self, fig, df, column: str, marker_type: str, color: str, label: str, mode: str):
+    #     """
+    #     최대값, 최소값, 또는 평균값을 그래프에 추가하는 함수.
+    #
+    #     Args:
+    #         fig: Plotly Figure 객체
+    #         df (pd.DataFrame): 데이터프레임 (시간 및 값 포함)
+    #         column (str): 값을 찾을 열 이름
+    #         marker_type (str): 'max', 'min', 또는 'mean' (최대값, 최소값, 평균값)
+    #         color (str): 마커 또는 선의 색상
+    #         label (str): 그래프에 표시할 라벨 ('Max BG', 'Min BG', 또는 'Mean BG')
+    #         mode (str): 'all' 또는 'selected' - all인 경우 일별로 최대값 표시
+    #     """
+    #     if mode == "all" and marker_type == "max":
+    #         # 일별 최대값 계산
+    #         df['date'] = df['std_time'].dt.date  # 날짜만 추출
+    #         daily_max = df.groupby('date')[column].max().reset_index()
+    #
+    #         # 일별 최대값을 그래프에 추가
+    #         for _, row in daily_max.iterrows():
+    #             date = row['date']
+    #             value = row[column]
+    #             time = df[(df['date'] == date) & (df[column] == value)]['std_time'].iloc[0]  # 해당 값의 시간
+    #
+    #             fig.add_trace(go.Scatter(
+    #                 x=[time],
+    #                 y=[value],
+    #                 mode='markers+text',
+    #                 marker=dict(color=color, size=10),
+    #                 text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+    #                 textposition="top center",
+    #                 name=f"{label} ({date})"
+    #             ))
+    #     elif marker_type in ['max', 'min', 'mean']:
+    #         # 기존 로직 유지
+    #         if marker_type == 'max':
+    #             value = df[column].max()
+    #             row = df[df[column] == value].iloc[0]
+    #             time = row['std_time']
+    #             fig.add_trace(go.Scatter(
+    #                 x=[time],
+    #                 y=[value],
+    #                 mode='markers+text',
+    #                 marker=dict(color=color, size=10),
+    #                 text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+    #                 textposition="top center",
+    #                 name=label
+    #             ))
+    #         elif marker_type == 'min':
+    #             value = df[column].min()
+    #             row = df[df[column] == value].iloc[0]
+    #             time = row['std_time']
+    #             fig.add_trace(go.Scatter(
+    #                 x=[time],
+    #                 y=[value],
+    #                 mode='markers+text',
+    #                 marker=dict(color=color, size=10),
+    #                 text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+    #                 textposition="top center",
+    #                 name=label
+    #             ))
+    #         elif marker_type == 'mean':
+    #             value = df[column].mean()
+    #             fig.add_hline(
+    #                 y=value,
+    #                 line=dict(color=color, dash='dash', width=2),
+    #                 annotation_text=f"{label}: {value:.2f}",
+    #                 annotation_position="top left"
+    #             )
+    #     else:
+    #         raise ValueError("marker_type must be 'max', 'min', or 'mean'")
+    def add_marker(self, fig, df, column: str, marker_type: str, color: str, label: str, mode: str):
         """
-        최대값, 최소값, 또는 평균값을 그래프에 추가하는 함수.
+        최대값 또는 평균값을 그래프에 추가하는 함수.
 
         Args:
             fig: Plotly Figure 객체
             df (pd.DataFrame): 데이터프레임 (시간 및 값 포함)
             column (str): 값을 찾을 열 이름
-            marker_type (str): 'max', 'min', 또는 'mean' (최대값, 최소값, 평균값)
+            marker_type (str): 'max' 또는 'mean' (최대값 또는 평균값)
             color (str): 마커 또는 선의 색상
-            label (str): 그래프에 표시할 라벨 ('Max BG', 'Min BG', 또는 'Mean BG')
+            label (str): 그래프에 표시할 라벨 ('Max BG' 또는 'Mean BG')
+            mode (str): 'all' 또는 'selected' - all인 경우 일별로 최대값 표시
         """
         if marker_type == 'max':
-            value = df[column].max()
-            row = df[df[column] == value].iloc[0]
-            time = row['std_time']
-            # 최대값 마커 추가
-            fig.add_trace(go.Scatter(
-                x=[time],
-                y=[value],
-                mode='markers+text',
-                marker=dict(color=color, size=10),
-                text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
-                textposition="top center",
-                name=label
-            ))
-        elif marker_type == 'min':
+            if mode == "all":
+                # 일별 최대값 계산
+                df['date'] = df['std_time'].dt.date  # 날짜만 추출
+                daily_max = df.groupby('date')[column].max().reset_index()
+
+                # 일별 최대값을 그래프에 추가
+                for _, row in daily_max.iterrows():
+                    date = row['date']
+                    value = row[column]
+                    time = df[(df['date'] == date) & (df[column] == value)]['std_time'].iloc[0]  # 해당 값의 시간
+
+                    fig.add_trace(go.Scatter(
+                        x=[time],
+                        y=[value],
+                        mode='markers+text',
+                        marker=dict(color=color, size=10),
+                        text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+                        textposition="top center",
+                        name=f"{label} ({date})"
+                    ))
+            elif mode == "selected":
+                # 선택된 기간 내 최대값
+                value = df[column].max()
+                row = df[df[column] == value].iloc[0]
+                time = row['std_time']
+
+                fig.add_trace(go.Scatter(
+                    x=[time],
+                    y=[value],
+                    mode='markers+text',
+                    marker=dict(color=color, size=10),
+                    text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+                    textposition="top center",
+                    name=label
+                ))
+
+        elif marker_type == 'min' and mode == "selected":
+            # 선택된 기간 내 최소값 (mode="selected"일 때만 표시)
             value = df[column].min()
             row = df[df[column] == value].iloc[0]
             time = row['std_time']
-            # 최소값 마커 추가
+
             fig.add_trace(go.Scatter(
                 x=[time],
                 y=[value],
@@ -97,9 +244,10 @@ class ChannelHealthcareSessionService:
                 textposition="top center",
                 name=label
             ))
+
         elif marker_type == 'mean':
-            value = df[column].mean()
             # 평균값 수평선 추가
+            value = df[column].mean()
             fig.add_hline(
                 y=value,
                 line=dict(color=color, dash='dash', width=2),
@@ -107,6 +255,9 @@ class ChannelHealthcareSessionService:
                 annotation_position="top left"
             )
         else:
+            if mode == "all" and marker_type == 'min':
+                # mode='all'일 때는 최저혈당을 무시합니다.
+                return
             raise ValueError("marker_type must be 'max', 'min', or 'mean'")
 
     def split_break_line(self, df: pd.DataFrame):
@@ -143,32 +294,25 @@ class ChannelHealthcareSessionService:
 
         return df_line_list
 
-    def calculate_y_axis_range(self, all_y_axis_values: list):
+    def calculate_y_axis_range(self, all_y_axis_values: list, mode: str):
         """
-            Y축 범위를 계산합니다.
+        Y축 범위를 계산합니다.
 
-            목적:
-                - 입력된 Y축 값(all_y_axis_values)의 최소값과 최대값을 기준으로 Y축 범위를 동적으로 설정합니다.
-                - 그래프가 기본 범위(60, 240) 내에 있는 경우 해당 범위를 유지합니다.
-                - 기본 범위를 벗어나는 값이 있으면 상/하단에 여유를 두어 그래프를 조정합니다.
+        Args:
+            all_y_axis_values (list): Y축 데이터 값 리스트.
+            mode (str): 그래프 모드 ("all" 또는 "selected").
 
-            동작:
-                1. `all_y_axis_values`가 비어 있으면 기본 범위 [60, 240]을 반환합니다.
-                2. 최소값과 최대값이 기본 범위(60, 240) 안에 있을 경우 기본 범위를 반환합니다.
-                3. 최소값이 기본 범위를 벗어나면 최소값에서 20을 뺀 값을 하한으로 설정합니다.
-                4. 최대값이 기본 범위를 벗어나면 최대값에 20을 더한 값을 상한으로 설정합니다.
-                5. 상한값은 최대 480까지 설정 가능하며, 최소값은 60 미만으로 내려가지 않도록 제한합니다.
-                6. 최대값이 420 이상인 경우 상한값을 480으로 고정합니다.
-
-            Args:
-                all_y_axis_values (list): Y축 데이터 값 리스트.
-
-            Returns:
-                list: Y축 범위 [min_y, max_y].
-            """
-
+        Returns:
+            list: Y축 범위 [min_y, max_y].
+        """
         if all_y_axis_values:
             min_y, max_y = min(all_y_axis_values), max(all_y_axis_values)
+
+            # 모드가 'all'인 경우 50단위로 범위를 계산
+            if mode == "all":
+                min_y = (min_y // 50) * 50  # 최소값을 50단위로 내림
+                max_y = ((max_y // 50) + 1) * 50  # 최대값을 50단위로 올림
+                return [min_y, max_y]
 
             # 기본 혈당 범위 내에서 처리
             if 60 < min_y < 240 and 60 < max_y < 240:
@@ -180,22 +324,54 @@ class ChannelHealthcareSessionService:
         else:
             return [60, 240]
 
-    def calculate_x_axis_range(self, sdate: datetime, edate: datetime) -> int:
+    # def calculate_x_axis_range(self, sdate: datetime, edate: datetime, mode:str) -> int:
+    #     """
+    #     X축의 dtick 값을 계산합니다.
+    #
+    #     Args:
+    #         sdate (datetime): 시작 날짜
+    #         edate (datetime): 종료 날짜
+    #
+    #     Returns:
+    #         int: dtick 값 (밀리초 단위)
+    #     """
+    #     days_diff = (sdate - edate).days
+    #
+    #     for day_limit in sorted(X_AXIS_DTICK_VALUES.keys(), reverse=True):
+    #         if days_diff <= day_limit:
+    #             dtick_value = X_AXIS_DTICK_VALUES[day_limit]
+    #
+    #     return dtick_value
+    def calculate_x_axis_range(self, sdate: datetime, edate: datetime, mode: str ) -> int:
         """
         X축의 dtick 값을 계산합니다.
 
         Args:
             sdate (datetime): 시작 날짜
             edate (datetime): 종료 날짜
+            mode (str): "selected" (기존 방식) 또는 "all" (전체 데이터용)
 
         Returns:
             int: dtick 값 (밀리초 단위)
         """
-        days_diff = (sdate - edate).days
+        days_diff = (edate - sdate).days  # edate - sdate로 변경 (양수로 계산)
 
-        for day_limit in sorted(X_AXIS_DTICK_VALUES.keys(), reverse=True):
-            if days_diff <= day_limit:
-                dtick_value = X_AXIS_DTICK_VALUES[day_limit]
+        if mode == "all":
+            # 전체 데이터의 경우 더 긴 기간을 가정하여 dtick 값 계산
+            if days_diff <= 7:
+                dtick_value = 43200 * 1000  # 12시간 간격
+            else:
+                dtick_value = 86400 * 1000  # 1일 간격
+        elif mode == "selected":
+            # 기존 로직 (선택된 데이터 범위 기준)
+            for day_limit in sorted(X_AXIS_DTICK_VALUES.keys(), reverse=True):
+                if days_diff <= day_limit:
+                    dtick_value = X_AXIS_DTICK_VALUES[day_limit]
+                    break
+            else:
+                dtick_value = X_AXIS_DTICK_VALUES[max(X_AXIS_DTICK_VALUES.keys())]  # 최대 범위 기본값
+        else:
+            raise ValueError("Invalid mode. Choose 'selected' or 'all'.")
 
         return dtick_value
 
@@ -233,6 +409,7 @@ class ChannelHealthcareSessionService:
             st.date_input('날짜 선택',
                           (viz_start_date, viz_end_date),
                           label_visibility='collapsed')
+
 
 
 channel_healthcare_session_service: ChannelHealthcareSessionService = ChannelHealthcareSessionService()
