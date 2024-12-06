@@ -164,30 +164,6 @@ class Portfolio_Channel_Layout():
         Draw all-day graph with selectable meal visualization modes.
         """
 
-        st.markdown(
-            """
-            <style>
-            .radio-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                margin-bottom: 0px; /* 여백 최소화 */
-            }
-            .radio-container label {
-                margin-right: 20px; /* 버튼 간격 */
-                font-size: 14px; /* 폰트 크기 */
-            }
-            .chart-container {
-                height: 500px; /* 그래프 높이 설정 */
-                display: flex;
-                justify-content: center;
-                align-items: center;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-
 
         col1, col2 = st.columns((1,9))
         # Streamlit UI for selecting meal visualization mode
@@ -200,11 +176,17 @@ class Portfolio_Channel_Layout():
             st.write(' ')
 
             meal_mode = st.radio(
-                "Select visualization type:",
-                options=["Meal", "Meal Zone"],
+                "Select visualization meal type:",
+                options=["Meal", "Meal Zone(4H)"],
                 index=0,  # Default to "Meal"
                 horizontal=True  # Set the radio buttons horizontally
 
+            )
+            exercise_mode= st.radio(
+                "Select visualization exercise type",
+                options=["Invisible", "Visible"],
+                index=0,
+                horizontal=True
             )
         with col2:
             fig = go.Figure()
@@ -214,16 +196,18 @@ class Portfolio_Channel_Layout():
                 self.plot_meal(fig, user_uid, sdate, edate, 'all')
             elif meal_mode == "Meal Zone":
                 self.plot_meal_zone(fig, user_uid, sdate, edate, 'all')
-            # elif meal_mode == 'ex':
-            #     self.plot_exercise(fig, user_uid, sdate, edate, 'all')
 
+            if exercise_mode == 'Invisible':
+                pass
+            elif exercise_mode == 'Visible':
+                self.plot_exercise(fig, user_uid, sdate, edate, 'all')
             st.plotly_chart(fig, use_container_width=True)
 
 
     def draw_graph(self, user_uid, sdate, edate):
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
-        self.plot_exercise(fig, user_uid, sdate, edate)
+        self.plot_exercise(fig, user_uid, sdate, edate, 'selected')
         self.plot_meal(fig, user_uid, sdate, edate, 'selected')
         self.plot_medicine(fig, user_uid, sdate)
         st.plotly_chart(fig , use_container_width=True)
@@ -390,78 +374,76 @@ class Portfolio_Channel_Layout():
         fig.update_layout(yaxis=dict(range=y_axis_range), xaxis=dict(dtick=x_axis_dtick))
 
     # 원본
-    def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
-        df = channel_healthcare_session_service.get_exercise_data(user_uid, sdate, edate)
-        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
-
-        if df is None:
-            return None
-
-        df = df[['start_time', 'end_time']]
-        df['start_time'] = pd.to_datetime(df['start_time'])
-        df['end_time'] = pd.to_datetime(df['end_time'])
-        df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
-
-        for index, row in df.iterrows():
-            ex_start = str(row['start_time'])
-            ex_end = str(row['end_time'])
-            fig.add_vrect(x0=ex_start, x1=ex_end, fillcolor='rgba(0, 255, 100, 0.5)', line_width=0.3,
-                          annotation_position='top left', annotation_text="운동")
-            
-    # 운동 부분 데이터 업데이트 확인 후 적용
-    # def plot_exercise(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
-    #     """
-    #     운동 데이터를 시각화하는 함수.
-    #
-    #     Args:
-    #         fig: Plotly Figure 객체
-    #         user_uid: 사용자 ID
-    #         sdate: 시작 날짜
-    #         edate: 종료 날짜
-    #         mode: 'all' 또는 'selected'로 동작을 분기
-    #     """
+    # def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
     #     df = channel_healthcare_session_service.get_exercise_data(user_uid, sdate, edate)
-    #     st.write('Original df', df)
+    #     viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+    #     viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
     #
-    #     if df is None or df.empty:
-    #         st.warning("No exercise data available for the selected range.")
+    #     if df is None:
     #         return None
     #
-    #     # 운동 데이터 필터링
     #     df = df[['start_time', 'end_time']]
     #     df['start_time'] = pd.to_datetime(df['start_time'])
     #     df['end_time'] = pd.to_datetime(df['end_time'])
+    #     df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
     #
-    #     if mode == "selected":
-    #         # SESSION_VIZ_START_DATE와 SESSION_VIZ_END_DATE로 필터링
-    #         viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-    #         viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
-    #         df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
-    #     elif mode == "all":
-    #         # 전체 기간의 운동 데이터를 유지
-    #         df = df[(df['start_time'] >= sdate) & (df['end_time'] <= edate)]
-    #     else:
-    #         raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
-    #
-    #     st.write(f"Filtered df for mode={mode}", df)
-    #
-    #     if df.empty:
-    #         st.warning(f"No exercise data after filtering for mode: {mode}")
-    #         return None
-    #
-    #     # Plotting
     #     for index, row in df.iterrows():
     #         ex_start = str(row['start_time'])
     #         ex_end = str(row['end_time'])
-    #         fig.add_vrect(
-    #             x0=ex_start,
-    #             x1=ex_end,
-    #             fillcolor='rgba(0, 255, 100, 0.5)' if mode == "selected" else 'rgba(0, 255, 100, 0.2)',
-    #             line_width=0.3,
-    #             annotation_position='top left',
-    #             annotation_text="운동" if mode == "selected" else f"운동 ({row['start_time'].strftime('%Y-%m-%d')})"
-    #         )
+    #         fig.add_vrect(x0=ex_start, x1=ex_end, fillcolor='rgba(0, 255, 100, 0.5)', line_width=0.3,
+    #                       annotation_position='top left', annotation_text="운동")
+            
+    # 운동 부분 데이터 업데이트 확인 후 적용
+    def plot_exercise(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
+        """
+        운동 데이터를 시각화하는 함수.
+
+        Args:
+            fig: Plotly Figure 객체
+            user_uid: 사용자 ID
+            sdate: 시작 날짜
+            edate: 종료 날짜
+            mode: 'all' 또는 'selected'로 동작을 분기
+        """
+        df = channel_healthcare_session_service.get_exercise_data(user_uid, sdate, edate)
+
+        if df is None or df.empty:
+            st.warning("No exercise data available for the selected range.")
+            return None
+
+        # 운동 데이터 필터링
+        df = df[['start_time', 'end_time']]
+        df['start_time'] = pd.to_datetime(df['start_time'])
+        df['end_time'] = pd.to_datetime(df['end_time'])
+
+        if mode == "selected":
+            # SESSION_VIZ_START_DATE와 SESSION_VIZ_END_DATE로 필터링
+            viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+            viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+            df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+        elif mode == "all":
+            # 전체 기간의 운동 데이터를 유지
+            df = df[(df['start_time'] >= sdate) & (df['end_time'] <= edate)]
+        else:
+            raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+
+
+        if df.empty:
+            st.warning(f"No exercise data after filtering for mode: {mode}")
+            return None
+
+        # Plotting
+        for index, row in df.iterrows():
+            ex_start = str(row['start_time'])
+            ex_end = str(row['end_time'])
+            fig.add_vrect(
+                x0=ex_start,
+                x1=ex_end,
+                fillcolor='rgba(0, 255, 100, 0.5)' if mode == "selected" else 'rgba(0, 255, 100, 0.2)',
+                line_width=0.3,
+                annotation_position='top left',
+                annotation_text="운동" if mode == "selected" else f"운동 ({row['start_time'].strftime('%Y-%m-%d')})"
+            )
 
     # 원본
     # def plot_meal(self, fig, user_uid: int, sdate: datetime, edate: datetime):

@@ -97,6 +97,60 @@ def read_exercise(user_uid : int, start_date : datetime, end_date:datetime, db :
 
     return exercise_data
 
+# @router.get("/exercise", response_model=List[EXERCISEHistoryResponse], tags=["ChannelHealthcare"])
+# def read_exercise(
+#     user_uid: int,
+#     start_date: datetime,
+#     end_date: datetime,
+#     db: Session = Depends(get_db)
+# ):
+#     '''
+#     Exercise History 정보를 조회하는 엔드포인트
+#     Args:
+#        user_uid: 사용자 ID
+#        start_date: 조회 시작 날짜
+#        end_date: 조회 종료 날짜
+#     Returns:
+#         특정 user_uid의 지정된 기간 동안의 운동 기록 데이터
+#     '''
+#     try:
+#         # 로그: 매개변수 확인
+#         logger.info(f"Fetching exercise data for user_uid: {user_uid}, start_date: {start_date}, end_date: {end_date}")
+#
+#         # 데이터베이스 쿼리
+#         exercise_data = db.query(EXERCISE_HistoryModel).filter(
+#             EXERCISE_HistoryModel.user_uid == user_uid,
+#             EXERCISE_HistoryModel.start_time <= end_date,  # 운동 시작 시간이 조회 종료일 이전
+#             EXERCISE_HistoryModel.end_time >= start_date  # 운동 종료 시간이 조회 시작일 이후
+#         ).order_by(EXERCISE_HistoryModel.start_time).all()
+#
+#         # 데이터가 없을 경우 404 반환
+#         if not exercise_data:
+#             logger.warning(f"No exercise data found for user_uid {user_uid} between {start_date} and {end_date}")
+#             raise HTTPException(
+#                 status_code=404,
+#                 detail=f"No exercise data found for user_uid {user_uid} between {start_date} and {end_date}"
+#             )
+#
+#         # 데이터가 있는 경우 반환
+#         logger.info(f"Fetched {len(exercise_data)} exercise records for user_uid {user_uid}.")
+#         return exercise_data
+#
+#     except HTTPException as e:
+#         # HTTPException은 그대로 반환
+#         logger.error(f"HTTPException: {e.detail}")
+#         raise e
+#
+#     except Exception as e:
+#         # 예상치 못한 오류: 500 반환
+#         logger.error(f"Unexpected error: {str(e)}")
+#         raise HTTPException(
+#             status_code=500,
+#             detail=f"Internal server error: {str(e)}"
+#         )
+#         return exercise_data
+
+
 @router.get("/meal", response_model=List[MEALHistoryResponse], tags=["ChannelHealthcare"])
 def read_meal(user_uid : int, start_date : datetime, end_date:datetime, db : Session = Depends(get_db)):
     '''
