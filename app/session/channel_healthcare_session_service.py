@@ -210,7 +210,7 @@ class ChannelHealthcareSessionService:
                         mode='markers+text',
                         marker=dict(color=color, size=10),
                         text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
-                        textposition="top center",
+                        textposition="middle right",
                         name=f"{label} ({date})"
                     ))
             elif mode == "selected":
@@ -225,7 +225,7 @@ class ChannelHealthcareSessionService:
                     mode='markers+text',
                     marker=dict(color=color, size=10),
                     text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
-                    textposition="top center",
+                    textposition="middle right",
                     name=label
                 ))
 
@@ -241,7 +241,7 @@ class ChannelHealthcareSessionService:
                 mode='markers+text',
                 marker=dict(color=color, size=10),
                 text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
-                textposition="top center",
+                textposition="middle right",
                 name=label
             ))
 

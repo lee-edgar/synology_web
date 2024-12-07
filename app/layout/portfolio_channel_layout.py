@@ -168,22 +168,17 @@ class Portfolio_Channel_Layout():
         col1, col2 = st.columns((1,9))
         # Streamlit UI for selecting meal visualization mode
         with col1:
-            st.write(' ')
-            st.write(' ')
-            st.write(' ')
-            st.write(' ')
-            st.write(' ')
-            st.write(' ')
+
 
             meal_mode = st.radio(
-                "Select visualization meal type:",
+                "Select meal type:",
                 options=["Meal", "Meal Zone(4H)"],
                 index=0,  # Default to "Meal"
                 horizontal=True  # Set the radio buttons horizontally
 
             )
             exercise_mode= st.radio(
-                "Select visualization exercise type",
+                "Select exercise type",
                 options=["Invisible", "Visible"],
                 index=0,
                 horizontal=True
@@ -201,23 +196,33 @@ class Portfolio_Channel_Layout():
                 pass
             elif exercise_mode == 'Visible':
                 self.plot_exercise(fig, user_uid, sdate, edate, 'all')
+            fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
+                              height=200)
+
             st.plotly_chart(fig, use_container_width=True)
 
 
     def draw_graph(self, user_uid, sdate, edate):
+        st.markdown('#### day summary')
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
         self.plot_exercise(fig, user_uid, sdate, edate, 'selected')
         self.plot_meal(fig, user_uid, sdate, edate, 'selected')
         self.plot_medicine(fig, user_uid, sdate)
+        fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
+                          height=300)  # 마진 최소화
+
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
+        st.markdown('#### day detail(meal_zone)')
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
         # self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
         # self.plot_medicine(fig, user_uid, sdate)
+        fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
+                          height=300)
         st.plotly_chart(fig, use_container_width=True)
 
 
@@ -320,9 +325,8 @@ class Portfolio_Channel_Layout():
 
         if mode == 'selected':
             df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
-            height = 400
         elif mode == "all":
-            height = 300
+            pass
         else:
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
 
@@ -358,20 +362,11 @@ class Portfolio_Channel_Layout():
         fig.add_hrect(y0=70, y1=180, fillcolor='yellow', opacity=0.09)
 
         fig.update_layout(
-            height=height,
-            # title={
-            #     "text": "<span style='font-size: 14px; color: gray'>초록색 영역 : 운동 데이터, 붉은색 영역 : 식사 데이터 </span>",
-            #     "y": 0.95,
-            #     "x": 0.025,
-            #     "xanchor": "left",
-            #     "yanchor": "top"
-            # },
             yaxis=dict(range=y_axis_range, tickmode='linear', tick0=0, dtick=20, fixedrange=True),
             xaxis=dict(tickangle=0, automargin=True, dtick=x_axis_dtick, tickformat='%H시<br>%m-%d',
                        hoverformat='%H:%M<br>%y-%m-%d'),
-            hovermode='x unified', showlegend=False
+            hovermode='x unified', showlegend=False,
         )
-        fig.update_layout(yaxis=dict(range=y_axis_range), xaxis=dict(dtick=x_axis_dtick))
 
     # 원본
     # def plot_exercise(self, fig, user_uid:int, sdate:datetime, edate:datetime):
