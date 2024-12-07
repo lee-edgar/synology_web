@@ -194,7 +194,7 @@ class Portfolio_Channel_Layout():
 
             if meal_mode == "Meal":
                 self.plot_meal(fig, user_uid, sdate, edate, 'all')
-            elif meal_mode == "Meal Zone":
+            elif meal_mode == "Meal Zone(4H)":
                 self.plot_meal_zone(fig, user_uid, sdate, edate, 'all')
 
             if exercise_mode == 'Invisible':
