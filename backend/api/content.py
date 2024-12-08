@@ -171,13 +171,3 @@ async def get_content(group: str, submenu: str):
     logging.info(f"Returning content for {group}/{submenu}")
     return result
 
-    # # 디버깅용 로그
-    # print("Available content:", json.dumps(content, ensure_ascii=False, indent=2))
-    #
-    # result = content.get(group, {}).get(submenu)
-    # if result is None:
-    #     print(f"Content not found for {group}/{submenu}")
-    #     return {"error": "Content not found"}
-    #
-    # print("Returning:", json.dumps(result, ensure_ascii=False))
-    # return result
