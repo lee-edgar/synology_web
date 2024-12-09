@@ -157,6 +157,7 @@ class Portfolio_Channel_Layout():
         """
         Draw all-day graph with selectable meal visualization modes.
         """
+        st.markdown('#### Overall Blood Glucose Trends')
 
 
         col1, col2 = st.columns((1,9))
@@ -197,24 +198,22 @@ class Portfolio_Channel_Layout():
 
 
     def draw_graph(self, user_uid, sdate, edate):
-        st.markdown('#### day summary')
+        st.markdown('#### Daily Summay')
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
         self.plot_exercise(fig, user_uid, sdate, edate, 'selected')
         self.plot_meal(fig, user_uid, sdate, edate, 'selected')
         self.plot_medicine(fig, user_uid, sdate)
         fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
-                          height=300)  # 마진 최소화
+                          height=200)  # 마진 최소화
 
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
-        st.markdown('#### day detail(meal_zone)')
+        st.markdown('#### Meal Zone Analysis(4hours)')
         fig = go.Figure()
         self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
-        # self.plot_exercise(fig, user_uid, sdate, edate)
         self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
-        # self.plot_medicine(fig, user_uid, sdate)
         fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
                           height=300)
         st.plotly_chart(fig, use_container_width=True)
@@ -424,7 +423,7 @@ class Portfolio_Channel_Layout():
         else:
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
 
-
+    # 리펙토링 원본
     def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
         """
         Meal Zone Plot Function with mode parameter.
@@ -436,22 +435,17 @@ class Portfolio_Channel_Layout():
             edate: End date for data filtering.
             mode: 'all' for daily meal zones, 'selected' for specific date range.
         """
+
         df = channel_healthcare_session_service.get_meal_data(user_uid, sdate, edate)
         if df is None or df.empty:
             st.warning("No meal data available for the selected range.")
             return None
+        # channel_healthcare_session_service.extract_cgm_for_meal_zones(sdate, edate)
 
         df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
         df['start_time'] = pd.to_datetime(df['start_time'])
         df['end_time'] = pd.to_datetime(df['end_time'])
 
-        if mode == 'selected':
-            viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-            viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
-            df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
-
-        if df.empty:
-            return None
 
         # mode=all: Add vrect for each meal zone in daily intervals
         if mode == 'all':
@@ -472,6 +466,13 @@ class Portfolio_Channel_Layout():
 
         # mode=selected: Plot meal zones in the selected date range
         elif mode == 'selected':
+            viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+            viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+            df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+
+
+            extract_meal_zone_df = channel_healthcare_session_service.extract_cgm_for_meal_zones(user_uid, sdate, edate, df)
+            st.write('extract_meal_zone_df', extract_meal_zone_df)
             for _, row in df.iterrows():
                 start_time_dt = pd.to_datetime(row['start_time'])
                 end_time_dt = pd.to_datetime(row['end_time'])
@@ -503,8 +504,40 @@ class Portfolio_Channel_Layout():
                         hoverinfo='text',
                         name='Meal Info'
                     ))
-        else:
-            raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+
+            for _, row in extract_meal_zone_df.iterrows():
+                max_bg_time = pd.to_datetime(row['max_bg_time'])
+                min_bg_time = pd.to_datetime(row['min_bg_time'])
+
+                # Max BG marker
+                fig.add_trace(go.Scatter(
+                    x=[max_bg_time],
+                    y=[row['max_bg']],
+                    mode='markers+text',
+                    marker=dict(size=15, color='blue', symbol='circle'),
+                    text=[f"Max BG: {row['max_bg']}<br>Time: {max_bg_time}"],
+                    textposition="top center",
+                    hoverinfo='text',
+                    name=f"Max BG ({row['meal_div_code']})"
+                ))
+
+                # Min BG marker
+                fig.add_trace(go.Scatter(
+                    x=[min_bg_time],
+                    y=[row['min_bg']],
+                    mode='markers+text',
+                    marker=dict(size=15, color='green', symbol='circle'),
+                    text=[f"Min BG: {row['min_bg']}<br>Time: {min_bg_time}"],
+                    textposition="bottom center",
+                    hoverinfo='text',
+                    name=f"Min BG ({row['meal_div_code']})"
+                ))
+        #
+        #
+        # else:
+        #     raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+
+
 
     def plot_medicine(self, fig, user_uid: int, sdate: datetime):
         '''

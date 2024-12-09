@@ -235,40 +235,115 @@ class ChannelHealthcareSessionService:
 
         return dtick_value
 
-    def update_navigatation(self):
-        __, __, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
+    def extract_cgm_for_meal_zones(self, user_uid, sdate, edate, meal_zone_df):
 
-        # 현재 viz_start_date와 viz_end_date를 세션에서 가져오기
-        viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
-        viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+        # cgm 데이터 가져오기
+        cgm_df = self.get_cgm_data(user_uid, sdate, edate)
 
-        # "이전" 버튼 클릭 시 처리
-        with col1:
-            if st.button(":arrow_backward: 이전", use_container_width=True):
-                # 날짜를 하루 전으로 이동
-                viz_start_date -= timedelta(days=1)
-                viz_end_date -= timedelta(days=1)
+        # std_time 열을 datetime 형식으로 변환
+        cgm_df['std_time'] = pd.to_datetime(cgm_df['std_time'])
 
-                # 변경된 날짜를 세션 상태에 업데이트
-                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+        # meal_zone_df의 start_time 및 end_time도 datetime 형식으로 변환
+        meal_zone_df['start_time'] = pd.to_datetime(meal_zone_df['start_time'])
+        meal_zone_df['end_time'] = pd.to_datetime(meal_zone_df['start_time']) + timedelta(hours=4)
 
-        # "다음" 버튼 클릭 시 처리
-        with col3:
-            if st.button("다음 :arrow_forward:", use_container_width=True):
-                # 날짜를 하루 후로 이동
-                viz_start_date += timedelta(days=1)
-                viz_end_date += timedelta(days=1)
+        # 결과 저장을 위한 리스트
+        results = []
 
-                # 변경된 날짜를 세션 상태에 업데이트
-                update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
-                update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+        # meal_zone_df의 각 행에 대해 반복
+        for _, row in meal_zone_df.iterrows():
+            # 현재 meal zone에 해당하는 cgm 데이터 필터링
+            filtered = cgm_df[(cgm_df['std_time'] >= row['start_time']) & (cgm_df['std_time'] <= row['end_time'])]
 
-        # 현재 날짜 출력
-        with col2:
-            st.date_input('날짜 선택',
-                          (viz_start_date, viz_end_date),
-                          label_visibility='collapsed')
+            if not filtered.empty:
+                # max 및 min 값과 해당 시간 추출
+                max_bg = filtered['bg'].max()
+                max_bg_time = filtered.loc[filtered['bg'].idxmax(), 'std_time']
+                min_bg = filtered['bg'].min()
+                min_bg_time = filtered.loc[filtered['bg'].idxmin(), 'std_time']
+            else:
+                max_bg = min_bg = max_bg_time = min_bg_time = None
+
+            # 결과 저장
+            results.append({
+                'meal_div_code': row['meal_div_code'],
+                'start_time': row['start_time'],
+                'end_time': row['end_time'],
+                'max_bg': max_bg,
+                'max_bg_time': max_bg_time,
+                'min_bg': min_bg,
+                'min_bg_time': min_bg_time
+            })
+
+        # 결과를 DataFrame으로 변환
+        results_df = pd.DataFrame(results)
+
+        return results_df
+
+    # 리펙토링
+    def get_filtered_meal_zones(self,user_uid, sdate, edate, mode, cgm_df):
+        """
+        Filter meal zone data based on the selected mode.
+        """
+        meal_data = self.get_meal_data(self, user_uid, sdate, edate)
+        if meal_data is None or meal_data.empty:
+            return None
+
+        meal_data['start_time'] = pd.to_datetime(meal_data['start_time'])
+        meal_data['end_time'] = pd.to_datetime(meal_data['end_time'])
+
+        if mode == 'selected':
+            # 특정 날짜 범위로 필터링
+            viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+            viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+            meal_data = meal_data[
+                (meal_data['start_time'] >= viz_start_date) & (meal_data['end_time'] <= viz_end_date)
+                ]
+
+        if meal_data.empty:
+            return None
+
+        # Meal zone에 따른 연속혈당 데이터 추출
+        matched_cgm_data = self.extract_cgm_for_meal_zones(meal_data, cgm_df)
+        return meal_data, matched_cgm_data
+
+
+
+    # 미사용 함수
+    # def update_navigatation(self):
+    #     __, __, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
+    # 
+    #     # 현재 viz_start_date와 viz_end_date를 세션에서 가져오기
+    #     viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
+    #     viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
+    # 
+    #     # "이전" 버튼 클릭 시 처리
+    #     with col1:
+    #         if st.button(":arrow_backward: 이전", use_container_width=True):
+    #             # 날짜를 하루 전으로 이동
+    #             viz_start_date -= timedelta(days=1)
+    #             viz_end_date -= timedelta(days=1)
+    # 
+    #             # 변경된 날짜를 세션 상태에 업데이트
+    #             update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+    #             update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+    # 
+    #     # "다음" 버튼 클릭 시 처리
+    #     with col3:
+    #         if st.button("다음 :arrow_forward:", use_container_width=True):
+    #             # 날짜를 하루 후로 이동
+    #             viz_start_date += timedelta(days=1)
+    #             viz_end_date += timedelta(days=1)
+    # 
+    #             # 변경된 날짜를 세션 상태에 업데이트
+    #             update_session_state(SESSION_VIZ_START_DATE, viz_start_date)
+    #             update_session_state(SESSION_VIZ_END_DATE, viz_end_date)
+    # 
+    #     # 현재 날짜 출력
+    #     with col2:
+    #         st.date_input('날짜 선택',
+    #                       (viz_start_date, viz_end_date),
+    #                       label_visibility='collapsed')
 
 
 
