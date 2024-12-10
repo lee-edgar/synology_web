@@ -251,6 +251,10 @@ class Portfolio_Channel_Layout():
                 sdate)
             )
 
+    def get_bollinger_band(self):
+
+        pass
+
 
     def plot_cgm(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
         all_y_axis_values = []
@@ -261,6 +265,7 @@ class Portfolio_Channel_Layout():
         if mode == 'selected':
             df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
         elif mode == "all":
+            channel_healthcare_session_service.update_bollinger_band(user_uid, df[['std_time','bg']])
             pass
         else:
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")

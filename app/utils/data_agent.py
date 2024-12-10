@@ -126,6 +126,8 @@ class DataAgent:
         data_manager.update_medicine(user_uid, sdate, medicine_json_data)
         return medicine_json_data
 
+    def update_bollinger(self):
+        pass
 
 
 data_agent:DataAgent = DataAgent()
