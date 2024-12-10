@@ -101,7 +101,7 @@ class ChannelHealthcareSessionService:
                     y=[value],
                     mode='markers+text',
                     marker=dict(color=color, size=10),
-                    text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+                    text=[f"Daily {label}: ({time.strftime('%H:%M')}, {value})"],
                     textposition="middle right",
                     name=label
                 ))
@@ -117,7 +117,7 @@ class ChannelHealthcareSessionService:
                 y=[value],
                 mode='markers+text',
                 marker=dict(color=color, size=10),
-                text=[f"{label}: ({time.strftime('%H:%M')}, {value})"],
+                text=[f"Daily {label}: ({time.strftime('%H:%M')}, {value})"],
                 textposition="middle right",
                 name=label
             ))
@@ -306,6 +306,7 @@ class ChannelHealthcareSessionService:
         # Meal zone에 따른 연속혈당 데이터 추출
         matched_cgm_data = self.extract_cgm_for_meal_zones(meal_data, cgm_df)
         return meal_data, matched_cgm_data
+
 
 
 

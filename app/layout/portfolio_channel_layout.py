@@ -204,19 +204,19 @@ class Portfolio_Channel_Layout():
         self.plot_exercise(fig, user_uid, sdate, edate, 'selected')
         self.plot_meal(fig, user_uid, sdate, edate, 'selected')
         self.plot_medicine(fig, user_uid, sdate)
-        fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
-                          height=200)  # 마진 최소화
+        fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=200)  # 마진 최소화
 
         st.plotly_chart(fig , use_container_width=True)
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
         st.markdown('#### Meal Zone Analysis(4hours)')
-        fig = go.Figure()
-        self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
-        self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
-        fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
-                          height=300)
-        st.plotly_chart(fig, use_container_width=True)
+        col1, col2 = st.columns((1,9))
+        with col2:
+            fig = go.Figure()
+            self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
+            self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
+            fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=300)
+            st.plotly_chart(fig, use_container_width=True)
 
 
     def draw_table(self, user_uid, sdate, edate):
@@ -289,7 +289,7 @@ class Portfolio_Channel_Layout():
         # 일별 또는 전체 최대값 추가
         channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='max', color='red',
                                                       label='Max BG', mode=mode)
-        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='min', color='green',
+        channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='min', color='red',
                                                       label='Min BG', mode=mode)
         channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='mean', color='purple',
                                                       label='Mean BG', mode=mode)
@@ -469,10 +469,7 @@ class Portfolio_Channel_Layout():
             viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
             viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
             df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
-
-
             extract_meal_zone_df = channel_healthcare_session_service.extract_cgm_for_meal_zones(user_uid, sdate, edate, df)
-            st.write('extract_meal_zone_df', extract_meal_zone_df)
             for _, row in df.iterrows():
                 start_time_dt = pd.to_datetime(row['start_time'])
                 end_time_dt = pd.to_datetime(row['end_time'])
