@@ -8,6 +8,7 @@ import streamlit as st
 from typing import Dict, Any, Optional
 
 from app.utils.streamlit_utils import get_date_list, get_alltime_date
+# from app.session.channel_healthcare_session_service import ChannelHealthcareSessionService, channel_healthcare_session_service
 
 @singleton
 class DataAgent:
@@ -43,6 +44,21 @@ class DataAgent:
         data_manager.update_cgm(user_uid, sdate, cgm_json_data)
         return cgm_json_data
 
+    def get_bollinger_band(self, user_uid, sdate, edate, bollinger_band_df):
+        bollinger_band_info = data_manager.get_bollinger_band(user_uid, sdate, edate)
+        if bollinger_band_info is None:
+            self.update_bollinger_band(user_uid, sdate, edate, bollinger_band_df)
+        return bollinger_band_info
+
+    def update_bollinger_band(self, user_uid, sdate, edate, bollinger_band_df):
+        from app.session.channel_healthcare_session_service import channel_healthcare_session_service
+        bollinger_band_data = channel_healthcare_session_service.update_bollinger_band(user_uid, bollinger_band_df)
+        if bollinger_band_data is None:
+            return None
+        data_manager.update_bollinger_band(user_uid, sdate, edate, bollinger_band_data)
+
+        return bollinger_band_data
+
 
     def get_exercise(self, user_uid: int, sdate: date, edate: date) -> Optional[dict]:
         exercise_list = []
@@ -70,6 +86,8 @@ class DataAgent:
             return None
         data_manager.update_exercise(user_uid, sdate, exercise_json_data)
         return exercise_json_data
+
+
 
 
     def get_meal(self, user_uid, sdate, edate) -> Optional[dict]:
@@ -126,8 +144,7 @@ class DataAgent:
         data_manager.update_medicine(user_uid, sdate, medicine_json_data)
         return medicine_json_data
 
-    def update_bollinger(self):
-        pass
+
 
 
 data_agent:DataAgent = DataAgent()

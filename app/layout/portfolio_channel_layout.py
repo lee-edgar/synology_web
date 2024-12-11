@@ -12,6 +12,8 @@ from app.utils.streamlit_utils import get_session_state, update_session_state, i
 import plotly.graph_objects as go
 import pandas as pd
 
+from backend.service.bollinger_band_service import bollinger
+
 
 class Portfolio_Channel_Layout():
     def __init__(self):
@@ -152,32 +154,26 @@ class Portfolio_Channel_Layout():
         if error_message is not None:
             st.error(f'{error_message}')
 
-
     def draw_allday_graph(self, user_uid, sdate, edate):
-        """
-        Draw all-day graph with selectable meal visualization modes.
-        """
         st.markdown('#### Overall Blood Glucose Trends')
 
+        col1, col2 = st.columns((1, 9))
 
-        col1, col2 = st.columns((1,9))
-        # Streamlit UI for selecting meal visualization mode
         with col1:
+            meal_mode = st.radio("Select meal type:", ["Invisible", "Meal", "Meal Zone(4H)"], index=0, horizontal=True)
+            exercise_mode = st.radio("Select exercise type", ["Invisible", "Visible"], index=0, horizontal=True)
+            bollinger_bend_mode = st.radio("Select bollinger bend type", ["Invisible", "Visible"], index=0,horizontal=True)
 
+            if bollinger_bend_mode == 'Visible':
+                show_moving_avg = st.checkbox("Show Moving Average", value=True)
+                band_range = st.checkbox("Show Band Range (Upper/Lower)", value=True)
 
-            meal_mode = st.radio(
-                "Select meal type:",
-                options=["Meal", "Meal Zone(4H)"],
-                index=0,  # Default to "Meal"
-                horizontal=True  # Set the radio buttons horizontally
+                std_multiplier = st.slider("Select Standard Deviation Multiplier", 1.0, 3.0, 2.0, 0.1)
+                window = st.slider("Select Moving Average Window", 5, 50, 10, 1)
+                smoothing_window = st.slider("Select Smoothing Window", 3, 20, 5, 1)
+            else:
+                std_multiplier, window, smoothing_window = 2.0, 10, 5
 
-            )
-            exercise_mode= st.radio(
-                "Select exercise type",
-                options=["Invisible", "Visible"],
-                index=0,
-                horizontal=True
-            )
         with col2:
             fig = go.Figure()
             self.plot_cgm(fig, user_uid, sdate, edate, 'all')
@@ -186,15 +182,80 @@ class Portfolio_Channel_Layout():
                 self.plot_meal(fig, user_uid, sdate, edate, 'all')
             elif meal_mode == "Meal Zone(4H)":
                 self.plot_meal_zone(fig, user_uid, sdate, edate, 'all')
-
-            if exercise_mode == 'Invisible':
+            elif meal_mode =="Invisible":
                 pass
-            elif exercise_mode == 'Visible':
+            if exercise_mode == 'Visible':
                 self.plot_exercise(fig, user_uid, sdate, edate, 'all')
-            fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),
-                              height=200)
 
+            if bollinger_bend_mode == 'Visible':
+                df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
+                self.bollinger_band(fig, user_uid, df, std_multiplier, window, smoothing_window, show_moving_avg, band_range)
+
+            fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
+
+    # 원본
+    # def draw_allday_graph(self, user_uid, sdate, edate):
+    #     """
+    #     Draw all-day graph with selectable meal visualization modes.
+    #     """
+    #     st.markdown('#### Overall Blood Glucose Trends')
+    #
+    #
+    #     col1, col2 = st.columns((1,9))
+    #     # Streamlit UI for selecting meal visualization mode
+    #     with col1:
+    #
+    #
+    #         meal_mode = st.radio(
+    #             "Select meal type:",
+    #             options=["Meal", "Meal Zone(4H)"],
+    #             index=0,  # Default to "Meal"
+    #             horizontal=True  # Set the radio buttons horizontally
+    #
+    #         )
+    #         exercise_mode= st.radio(
+    #             "Select exercise type",
+    #             options=["Invisible", "Visible"],
+    #             index=0,
+    #             horizontal=True
+    #         )
+    #         bollinger_bend_mode= st.radio(
+    #             "Select bollinger bend type",
+    #             options=["Invisible", "Visible"],
+    #             index=0,
+    #             horizontal=True
+    #         )
+    #         # if bollinger_bend_mode =='Visible':
+    #         #     std_multiplier = st.slider("Select Standard Deviation Multiplier", min_value=1.0, max_value=3.0, value=2.0, step=0.1)
+    #         #     window = st.slider("Select Moving Average Window", min_value=5, max_value=50, value=10, step=1)
+    #         #     smoothing_window = st.slider("Select Smoothing Window", min_value=3, max_value=20, value=5, step=1)
+    #
+    #     with col2:
+    #         fig = go.Figure()
+    #         self.plot_cgm(fig, user_uid, sdate, edate, 'all')
+    #         if meal_mode == "Meal":
+    #             self.plot_meal(fig, user_uid, sdate, edate, 'all')
+    #         elif meal_mode == "Meal Zone(4H)":
+    #             self.plot_meal_zone(fig, user_uid, sdate, edate, 'all')
+    #
+    #         if exercise_mode == 'Invisible':
+    #             pass
+    #         elif exercise_mode == 'Visible':
+    #             self.plot_exercise(fig, user_uid, sdate, edate, 'all')
+    #
+    #         if bollinger_bend_mode == 'Invisible':
+    #             pass
+    #         elif bollinger_bend_mode == 'Visible':
+    #             df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
+    #             self.bollinger_band(fig, user_uid, df)
+    #             pass
+    #
+    #
+    #
+    #         fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=350)
+    #         st.plotly_chart(fig, use_container_width=True)
+
 
 
     def draw_graph(self, user_uid, sdate, edate):
@@ -251,9 +312,147 @@ class Portfolio_Channel_Layout():
                 sdate)
             )
 
-    def get_bollinger_band(self):
+    def bollinger_band(self, fig, user_uid, df, std_multiplier, window, smoothing_window, show_moving_avg, band_range):
 
-        pass
+        # std_time 열을 datetime 형식으로 변환
+        df['std_time'] = pd.to_datetime(df['std_time'])
+        df['date'] = df['std_time'].dt.date
+
+        # 데이터를 시간 순으로 정렬
+        df = df.sort_values(by=['date', 'std_time'])
+
+        # 일자별 데이터프레임 저장
+        daily_dataframes = []
+
+        for date, daily_df in df.groupby('date'):
+
+            if len(daily_df) < window:
+                st.warning(f"Insufficient data points for {date}: {len(daily_df)} (required: {window})")
+                continue
+
+            daily_df['moving_avg'] = daily_df['bg'].rolling(window=window).mean().fillna(method='bfill')
+            daily_df['moving_std'] = daily_df['bg'].rolling(window=window).std().fillna(method='bfill')
+
+            daily_df['upper_band'] = daily_df['moving_avg'] + (std_multiplier * daily_df['moving_std'])
+            daily_df['lower_band'] = daily_df['moving_avg'] - (std_multiplier * daily_df['moving_std'])
+
+            daily_dataframes.append(daily_df)
+
+        all_daily_data = pd.concat(daily_dataframes)
+
+        all_daily_data['bg_smooth'] = all_daily_data['bg'].rolling(window=smoothing_window).mean()
+        all_daily_data['upper_band_smooth'] = all_daily_data['upper_band'].rolling(window=smoothing_window).mean()
+        all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
+        all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
+
+        # Plotting
+        if band_range:
+            fig.add_trace(go.Scatter(
+                x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
+                mode='lines',
+                name=f'Upper Band (Std x {std_multiplier})',
+                line=dict(color='red', dash='solid')
+            ))
+            fig.add_trace(go.Scatter(
+                x=all_daily_data['std_time'], y=all_daily_data['lower_band_smooth'],
+                mode='lines',
+                name=f'Lower Band (Std x {std_multiplier})',
+                line=dict(color='red', dash='solid')
+            ))
+        if show_moving_avg:
+            fig.add_trace(go.Scatter(
+                x=all_daily_data['std_time'], y=all_daily_data['moving_avg_smooth'],
+                mode='lines',
+                name='Moving Average (Smoothed)',
+                line=dict(color='green'),
+                ))
+    # 원본
+    # def bollinger_band(self, fig, user_uid, df):
+    #     st.title("Interactive Blood Glucose Bollinger Bands")
+    #
+    #     # 사용자 입력 슬라이더
+    #     std_multiplier = st.slider("Select Standard Deviation Multiplier", min_value=1.0, max_value=3.0, value=2.0,
+    #                                step=0.1)
+    #     window = st.slider("Select Moving Average Window", min_value=5, max_value=50, value=10, step=1)
+    #     smoothing_window = st.slider("Select Smoothing Window", min_value=3, max_value=20, value=5, step=1)
+    #
+    #     # std_time 열을 datetime 형식으로 변환
+    #     df['std_time'] = pd.to_datetime(df['std_time'])
+    #     df['date'] = df['std_time'].dt.date
+    #
+    #     # 데이터를 시간 순으로 정렬
+    #     df = df.sort_values(by=['date', 'std_time'])
+    #
+    #     # 일자별 데이터프레임 저장
+    #     daily_dataframes = []
+    #
+    #     for date, daily_df in df.groupby('date'):
+    #         # 이동 평균 및 표준 편차 계산
+    #         daily_df['moving_avg'] = daily_df['bg'].rolling(window=window).mean()
+    #         daily_df['moving_std'] = daily_df['bg'].rolling(window=window).std()
+    #
+    #         # 상단 밴드와 하단 밴드 계산
+    #         daily_df['upper_band'] = daily_df['moving_avg'] + (std_multiplier * daily_df['moving_std'])
+    #         daily_df['lower_band'] = daily_df['moving_avg'] - (std_multiplier * daily_df['moving_std'])
+    #
+    #         # 결측치 제거
+    #         daily_df = daily_df.dropna()
+    #         daily_dataframes.append(daily_df)
+    #
+    #     # 병합
+    #     all_daily_data = pd.concat(daily_dataframes)
+    #
+    #     # 스무싱 적용
+    #     all_daily_data['bg_smooth'] = all_daily_data['bg'].rolling(window=smoothing_window).mean()
+    #     all_daily_data['upper_band_smooth'] = all_daily_data['upper_band'].rolling(window=smoothing_window).mean()
+    #     all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
+    #     all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
+    #
+    #     # Plotly 그래프 생성
+    #     # fig = go.Figure()
+    #
+    #     # 혈당 데이터
+    #     # fig.add_trace(go.Scatter(
+    #     #     x=all_daily_data['std_time'], y=all_daily_data['bg_smooth'],
+    #     #     mode='lines',
+    #     #     name='Blood Glucose (Smoothed)',
+    #     #     line=dict(color='blue')
+    #     # ))
+    #
+    #     # 상단 밴드
+    #
+    #     fig.add_trace(go.Scatter(
+    #         x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
+    #         mode='lines',
+    #         name=f'Upper Band (Std x {std_multiplier})',
+    #         line=dict(color='red', dash='dash')
+    #     ))
+    #
+    #     # 하단 밴드
+    #     fig.add_trace(go.Scatter(
+    #         x=all_daily_data['std_time'], y=all_daily_data['lower_band_smooth'],
+    #         mode='lines',
+    #         name=f'Lower Band (Std x {std_multiplier})',
+    #         line=dict(color='red', dash='dash')
+    #     ))
+    #
+    #     # 이동 평균
+    #     fig.add_trace(go.Scatter(
+    #         x=all_daily_data['std_time'], y=all_daily_data['moving_avg_smooth'],
+    #         mode='lines',
+    #         name='Moving Average (Smoothed)',
+    #         line=dict(color='green')
+    #     ))
+    #
+    #     # 레이아웃 설정
+    #     fig.update_layout(
+    #         title="Interactive Blood Glucose Bollinger Bands",
+    #         xaxis_title="Time",
+    #         yaxis_title="Blood Glucose Level",
+    #         template="plotly_white",
+    #         legend=dict(orientation="h", x=0.5, y=-0.2, xanchor="center")
+    #     )
+        
 
 
     def plot_cgm(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
@@ -261,11 +460,14 @@ class Portfolio_Channel_Layout():
 
         df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
         df['std_time'] = pd.to_datetime(df['std_time'])
+        # channel_healthcare_session_service.get_bollinger_band(user_uid, sdate, edate, df[['std_time', 'bg']])
 
         if mode == 'selected':
             df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
         elif mode == "all":
-            channel_healthcare_session_service.update_bollinger_band(user_uid, df[['std_time','bg']])
+
+            # blb = channel_healthcare_session_service.get_bollinger_band(user_uid, sdate, edate, df[['std_time','bg']])
+
             pass
         else:
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")

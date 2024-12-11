@@ -14,6 +14,7 @@ class DataManager:
         self.exercise_dict = {}
         self.meal_dict = {}
         self.medicine_dict = {}
+        self.bollinger_band_dict = {}
 
 
     def get_cgm(self, user_uid: int, sdate: date, edate: date) -> Optional[Dict[str, Any]]:
@@ -30,6 +31,19 @@ class DataManager:
         else:
             self.cgm_dict[user_uid] = cgm_json_data
             # self.cgm_dict[user_uid] = {useful_data: cgm_json_data}
+
+    def get_bollinger_band(self, user_uid:int, sdate :date, edate:date):
+        bollinger_band_info = self.bollinger_band_dict.get(user_uid)
+        if bollinger_band_info is None:
+            return None
+        return bollinger_band_info
+
+    def update_bollinger_band(self, user_uid, sdate, edate, bollinger_band_data):
+        bollinger_band_info = self.bollinger_band_dict.get(user_uid)
+        if bollinger_band_info is not None:
+            bollinger_band_info[user_uid] = bollinger_band_data
+        else:
+            self.bollinger_band_dict[user_uid] = bollinger_band_data
 
 
 

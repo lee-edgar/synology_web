@@ -307,51 +307,54 @@ class ChannelHealthcareSessionService:
         matched_cgm_data = self.extract_cgm_for_meal_zones(meal_data, cgm_df)
         return meal_data, matched_cgm_data
 
-    # def update_bollinger_band(self, user_uid, df, window=10, smoothing_window=5):
-    #     if df.empty:
-    #         raise ValueError("CGM data not found.")
+
+
+
+    # def update_bollinger_band(self, user_uid, df):
+    #     st.title("Interactive Blood Glucose Bollinger Bands")
+    #
+    #     # 사용자 입력 슬라이더
+    #     std_multiplier = st.slider("Select Standard Deviation Multiplier", min_value=1.0, max_value=3.0, value=2.0,
+    #                                step=0.1)
+    #     window = st.slider("Select Moving Average Window", min_value=5, max_value=50, value=10, step=1)
+    #     smoothing_window = st.slider("Select Smoothing Window", min_value=3, max_value=20, value=5, step=1)
     #
     #     # std_time 열을 datetime 형식으로 변환
     #     df['std_time'] = pd.to_datetime(df['std_time'])
-    #
-    #     # 일자별 데이터를 추출하기 위해 'date' 열 추가
     #     df['date'] = df['std_time'].dt.date
     #
     #     # 데이터를 시간 순으로 정렬
     #     df = df.sort_values(by=['date', 'std_time'])
     #
-    #     # 일자별 데이터프레임을 저장할 리스트
+    #     # 일자별 데이터프레임 저장
     #     daily_dataframes = []
     #
-    #     # 일자별로 데이터 분리 및 동적 볼린저 밴드 계산
     #     for date, daily_df in df.groupby('date'):
     #         # 이동 평균 및 표준 편차 계산
     #         daily_df['moving_avg'] = daily_df['bg'].rolling(window=window).mean()
     #         daily_df['moving_std'] = daily_df['bg'].rolling(window=window).std()
     #
     #         # 상단 밴드와 하단 밴드 계산
-    #         daily_df['upper_band'] = daily_df['moving_avg'] + (2 * daily_df['moving_std'])
-    #         daily_df['lower_band'] = daily_df['moving_avg'] - (2 * daily_df['moving_std'])
+    #         daily_df['upper_band'] = daily_df['moving_avg'] + (std_multiplier * daily_df['moving_std'])
+    #         daily_df['lower_band'] = daily_df['moving_avg'] - (std_multiplier * daily_df['moving_std'])
     #
-    #         # 결측치 제거 (rolling 함수의 영향으로 초기 값 제거)
+    #         # 결측치 제거
     #         daily_df = daily_df.dropna()
-    #
-    #         # 계산된 일일 데이터를 리스트에 추가
     #         daily_dataframes.append(daily_df)
     #
-    #     # 일자별 데이터를 병합
+    #     # 병합
     #     all_daily_data = pd.concat(daily_dataframes)
     #
-    #     # 스무싱(Smoothing) 적용: 이동 평균
+    #     # 스무싱 적용
     #     all_daily_data['bg_smooth'] = all_daily_data['bg'].rolling(window=smoothing_window).mean()
     #     all_daily_data['upper_band_smooth'] = all_daily_data['upper_band'].rolling(window=smoothing_window).mean()
     #     all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
     #     all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
     #
-    #     # 동적 볼린저 밴드 시각화
+    #     # Plotly 그래프 생성
     #     fig = go.Figure()
     #
-    #     # 혈당 데이터 (평활화된 데이터)
+    #     # 혈당 데이터
     #     fig.add_trace(go.Scatter(
     #         x=all_daily_data['std_time'], y=all_daily_data['bg_smooth'],
     #         mode='lines',
@@ -363,7 +366,7 @@ class ChannelHealthcareSessionService:
     #     fig.add_trace(go.Scatter(
     #         x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
     #         mode='lines',
-    #         name='Upper Band (Smoothed)',
+    #         name=f'Upper Band (Std x {std_multiplier})',
     #         line=dict(color='red', dash='dash')
     #     ))
     #
@@ -371,7 +374,7 @@ class ChannelHealthcareSessionService:
     #     fig.add_trace(go.Scatter(
     #         x=all_daily_data['std_time'], y=all_daily_data['lower_band_smooth'],
     #         mode='lines',
-    #         name='Lower Band (Smoothed)',
+    #         name=f'Lower Band (Std x {std_multiplier})',
     #         line=dict(color='red', dash='dash')
     #     ))
     #
@@ -385,115 +388,40 @@ class ChannelHealthcareSessionService:
     #
     #     # 레이아웃 설정
     #     fig.update_layout(
-    #         title="Smoothed Dynamic Blood Glucose Bollinger Bands",
+    #         title="Interactive Blood Glucose Bollinger Bands",
     #         xaxis_title="Time",
     #         yaxis_title="Blood Glucose Level",
     #         template="plotly_white",
     #         legend=dict(orientation="h", x=0.5, y=-0.2, xanchor="center")
     #     )
     #
-    #     fig.show()
+    #     # 그래프 출력
+    #     st.plotly_chart(fig)
+    #
+    #     # 데이터 확인 옵션
+    #     if st.checkbox("Show Data"):
+    #         st.write(all_daily_data)
 
-    import pandas as pd
-    import plotly.graph_objects as go
+    # def get_exercise_data(self, user_uid: int, sdate: date, edate:date):
+    #     exercise_info = data_agent.get_exercise(user_uid, sdate, edate)
+    #     if exercise_info is None:
+    #         return None
+    #     return pd.DataFrame(exercise_info)
 
-    # def update_bollinger_band(self, user_uid, df, window=10, smoothing_window=5):
-    #     if df.empty:
-    #         raise ValueError("CGM data not found.")
-    #
-    #     # std_time 열을 datetime 형식으로 변환
-    #     df['std_time'] = pd.to_datetime(df['std_time'])
-    #
-    #     # 일자별 데이터를 추출하기 위해 'date' 열 추가
-    #     df['date'] = df['std_time'].dt.date
-    #
-    #     # 데이터를 시간 순으로 정렬
-    #     df = df.sort_values(by=['date', 'std_time'])
-    #
-    #     # 일자별 데이터프레임을 저장할 리스트
-    #     daily_dataframes = []
-    #
-    #     # 일자별로 데이터 분리 및 동적 볼린저 밴드 계산
-    #     for date, daily_df in df.groupby('date'):
-    #         # 이동 평균 및 표준 편차 계산
-    #         daily_df['moving_avg'] = daily_df['bg'].rolling(window=window).mean()
-    #         daily_df['moving_std'] = daily_df['bg'].rolling(window=window).std()
-    #
-    #         # 상단 밴드와 하단 밴드 계산
-    #         daily_df['upper_band'] = daily_df['moving_avg'] + (2 * daily_df['moving_std'])
-    #         daily_df['lower_band'] = daily_df['moving_avg'] - (2 * daily_df['moving_std'])
-    #
-    #         # 결측치 제거 (rolling 함수의 영향으로 초기 값 제거)
-    #         daily_df = daily_df.dropna()
-    #
-    #         # 계산된 일일 데이터를 리스트에 추가
-    #         daily_dataframes.append(daily_df)
-    #
-    #     # 일자별 데이터를 병합
-    #     all_daily_data = pd.concat(daily_dataframes)
-    #
-    #     # 스무싱(Smoothing) 적용: 이동 평균
-    #     all_daily_data['bg_smooth'] = all_daily_data['bg'].rolling(window=smoothing_window).mean()
-    #     all_daily_data['upper_band_smooth'] = all_daily_data['upper_band'].rolling(window=smoothing_window).mean()
-    #     all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
-    #     all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
-    #
-    #     # 동적 볼린저 밴드 시각화
-    #     fig = go.Figure()
-    #
-    #     # 혈당 데이터 (평활화된 데이터)
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['bg_smooth'],
-    #         mode='lines',
-    #         name='Blood Glucose (Smoothed)',
-    #         line=dict(color='blue')
-    #     ))
-    #
-    #     # 상단 밴드
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
-    #         mode='lines',
-    #         name='Upper Band (Smoothed)',
-    #         line=dict(color='red', dash='dash')
-    #     ))
-    #
-    #     # 하단 밴드
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['lower_band_smooth'],
-    #         mode='lines',
-    #         name='Lower Band (Smoothed)',
-    #         line=dict(color='red', dash='dash')
-    #     ))
-    #
-    #     # 이동 평균
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['moving_avg_smooth'],
-    #         mode='lines',
-    #         name='Moving Average (Smoothed)',
-    #         line=dict(color='green')
-    #     ))
-    #
-    #     # 레이아웃 설정
-    #     fig.update_layout(
-    #         title="Smoothed Dynamic Blood Glucose Bollinger Bands",
-    #         xaxis_title="Time",
-    #         yaxis_title="Blood Glucose Level",
-    #         template="plotly_white",
-    #         legend=dict(orientation="h", x=0.5, y=-0.2, xanchor="center")
-    #     )
-    #
-    #     fig.show()
+    def get_bollinger_band(self, user_uid: int, sdate, edate, bollinger_band_df):
+        bollinger_band_info = data_agent.get_bollinger_band(user_uid, sdate, edate, bollinger_band_df)
+        if bollinger_band_info is None:
+            return None
+        return bollinger_band_info
 
-        # 데이터를 반환 (필요할 경우 분석에 활용 가능)
-        # return all_daily_data
     def update_bollinger_band(self, user_uid, df):
-        st.title("Interactive Blood Glucose Bollinger Bands")
-
-        # 사용자 입력 슬라이더
-        std_multiplier = st.slider("Select Standard Deviation Multiplier", min_value=1.0, max_value=3.0, value=2.0,
-                                   step=0.1)
-        window = st.slider("Select Moving Average Window", min_value=5, max_value=50, value=10, step=1)
-        smoothing_window = st.slider("Select Smoothing Window", min_value=3, max_value=20, value=5, step=1)
+        """
+        볼린저 밴드 및 볼린저 밴드 기반 TIR 계산 함수
+        추후 TIR, Bollinger_TIR은 일자별로 분기 필요.
+        """
+        window = 20
+        std_multiplier = 2.0
+        smoothing_window = 5
 
         # std_time 열을 datetime 형식으로 변환
         df['std_time'] = pd.to_datetime(df['std_time'])
@@ -516,6 +444,10 @@ class ChannelHealthcareSessionService:
 
             # 결측치 제거
             daily_df = daily_df.dropna()
+
+            # 볼린저 밴드 기반 TIR 계산
+            daily_df['bollinger_tir'] = self.calculate_bollinger_tir(daily_df)
+            daily_df['tir'] = self.calculate_tir(daily_df, 80, 180)
             daily_dataframes.append(daily_df)
 
         # 병합
@@ -527,58 +459,43 @@ class ChannelHealthcareSessionService:
         all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
         all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
 
-        # Plotly 그래프 생성
-        fig = go.Figure()
+        return all_daily_data
 
-        # 혈당 데이터
-        fig.add_trace(go.Scatter(
-            x=all_daily_data['std_time'], y=all_daily_data['bg_smooth'],
-            mode='lines',
-            name='Blood Glucose (Smoothed)',
-            line=dict(color='blue')
-        ))
+    def calculate_bollinger_tir(self, df):
+        """
+        TIR(Time in Range) 계산 함수
+        일별 데이터 포인트가 범위(상단 밴드 ~ 하단 밴드) 안에 드는 포인트 개수 / 전체 데이터 포인트 개수
 
-        # 상단 밴드
-        fig.add_trace(go.Scatter(
-            x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
-            mode='lines',
-            name=f'Upper Band (Std x {std_multiplier})',
-            line=dict(color='red', dash='dash')
-        ))
+        Args:
+            df (pd.DataFrame): 혈당 데이터를 포함하는 데이터프레임
+            lower_limit (int): TIR 하한값
+            upper_limit (int): TIR 상한값
 
-        # 하단 밴드
-        fig.add_trace(go.Scatter(
-            x=all_daily_data['std_time'], y=all_daily_data['lower_band_smooth'],
-            mode='lines',
-            name=f'Lower Band (Std x {std_multiplier})',
-            line=dict(color='red', dash='dash')
-        ))
+        Returns:
+            float: TIR 백분율
+        """
+        total_points = len(df)
+        in_range_points = len(df[(df['bg'] >= df['lower_band']) & (df['bg'] <= df['upper_band'])])
+        tir_percentage = (in_range_points / total_points) * 100 if total_points > 0 else 0
+        return tir_percentage
 
-        # 이동 평균
-        fig.add_trace(go.Scatter(
-            x=all_daily_data['std_time'], y=all_daily_data['moving_avg_smooth'],
-            mode='lines',
-            name='Moving Average (Smoothed)',
-            line=dict(color='green')
-        ))
+    def calculate_tir(self, df, lower_limit:int, upper_limit:int):
+        """
+        TIR(Time in Range) 계산 함수
+        일별 데이터 포인트가 범위(80~180) 안에 드는 포인트 개수 / 전체 데이터 포인트 개수
 
-        # 레이아웃 설정
-        fig.update_layout(
-            title="Interactive Blood Glucose Bollinger Bands",
-            xaxis_title="Time",
-            yaxis_title="Blood Glucose Level",
-            template="plotly_white",
-            legend=dict(orientation="h", x=0.5, y=-0.2, xanchor="center")
-        )
+        Args:
+            df (pd.DataFrame): 혈당 데이터를 포함하는 데이터프레임
+            lower_limit (int): TIR 하한값
+            upper_limit (int): TIR 상한값
 
-        # 그래프 출력
-        st.plotly_chart(fig)
-
-        # 데이터 확인 옵션
-        if st.checkbox("Show Data"):
-            st.write(all_daily_data)
-
-
+        Returns:
+            float: TIR 백분율
+        """
+        total_points = len(df)
+        in_range_points = len(df[(df['bg'] >= lower_limit) & (df['bg'] <= upper_limit)])
+        tir_percentage = (in_range_points / total_points) * 100 if total_points > 0 else 0
+        return tir_percentage
 
 
     # 미사용 함수
