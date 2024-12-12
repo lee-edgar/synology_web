@@ -307,107 +307,6 @@ class ChannelHealthcareSessionService:
         matched_cgm_data = self.extract_cgm_for_meal_zones(meal_data, cgm_df)
         return meal_data, matched_cgm_data
 
-
-
-
-    # def update_bollinger_band(self, user_uid, df):
-    #     st.title("Interactive Blood Glucose Bollinger Bands")
-    #
-    #     # 사용자 입력 슬라이더
-    #     std_multiplier = st.slider("Select Standard Deviation Multiplier", min_value=1.0, max_value=3.0, value=2.0,
-    #                                step=0.1)
-    #     window = st.slider("Select Moving Average Window", min_value=5, max_value=50, value=10, step=1)
-    #     smoothing_window = st.slider("Select Smoothing Window", min_value=3, max_value=20, value=5, step=1)
-    #
-    #     # std_time 열을 datetime 형식으로 변환
-    #     df['std_time'] = pd.to_datetime(df['std_time'])
-    #     df['date'] = df['std_time'].dt.date
-    #
-    #     # 데이터를 시간 순으로 정렬
-    #     df = df.sort_values(by=['date', 'std_time'])
-    #
-    #     # 일자별 데이터프레임 저장
-    #     daily_dataframes = []
-    #
-    #     for date, daily_df in df.groupby('date'):
-    #         # 이동 평균 및 표준 편차 계산
-    #         daily_df['moving_avg'] = daily_df['bg'].rolling(window=window).mean()
-    #         daily_df['moving_std'] = daily_df['bg'].rolling(window=window).std()
-    #
-    #         # 상단 밴드와 하단 밴드 계산
-    #         daily_df['upper_band'] = daily_df['moving_avg'] + (std_multiplier * daily_df['moving_std'])
-    #         daily_df['lower_band'] = daily_df['moving_avg'] - (std_multiplier * daily_df['moving_std'])
-    #
-    #         # 결측치 제거
-    #         daily_df = daily_df.dropna()
-    #         daily_dataframes.append(daily_df)
-    #
-    #     # 병합
-    #     all_daily_data = pd.concat(daily_dataframes)
-    #
-    #     # 스무싱 적용
-    #     all_daily_data['bg_smooth'] = all_daily_data['bg'].rolling(window=smoothing_window).mean()
-    #     all_daily_data['upper_band_smooth'] = all_daily_data['upper_band'].rolling(window=smoothing_window).mean()
-    #     all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
-    #     all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
-    #
-    #     # Plotly 그래프 생성
-    #     fig = go.Figure()
-    #
-    #     # 혈당 데이터
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['bg_smooth'],
-    #         mode='lines',
-    #         name='Blood Glucose (Smoothed)',
-    #         line=dict(color='blue')
-    #     ))
-    #
-    #     # 상단 밴드
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
-    #         mode='lines',
-    #         name=f'Upper Band (Std x {std_multiplier})',
-    #         line=dict(color='red', dash='dash')
-    #     ))
-    #
-    #     # 하단 밴드
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['lower_band_smooth'],
-    #         mode='lines',
-    #         name=f'Lower Band (Std x {std_multiplier})',
-    #         line=dict(color='red', dash='dash')
-    #     ))
-    #
-    #     # 이동 평균
-    #     fig.add_trace(go.Scatter(
-    #         x=all_daily_data['std_time'], y=all_daily_data['moving_avg_smooth'],
-    #         mode='lines',
-    #         name='Moving Average (Smoothed)',
-    #         line=dict(color='green')
-    #     ))
-    #
-    #     # 레이아웃 설정
-    #     fig.update_layout(
-    #         title="Interactive Blood Glucose Bollinger Bands",
-    #         xaxis_title="Time",
-    #         yaxis_title="Blood Glucose Level",
-    #         template="plotly_white",
-    #         legend=dict(orientation="h", x=0.5, y=-0.2, xanchor="center")
-    #     )
-    #
-    #     # 그래프 출력
-    #     st.plotly_chart(fig)
-    #
-    #     # 데이터 확인 옵션
-    #     if st.checkbox("Show Data"):
-    #         st.write(all_daily_data)
-
-    # def get_exercise_data(self, user_uid: int, sdate: date, edate:date):
-    #     exercise_info = data_agent.get_exercise(user_uid, sdate, edate)
-    #     if exercise_info is None:
-    #         return None
-    #     return pd.DataFrame(exercise_info)
-
     def get_bollinger_band(self, user_uid: int, sdate, edate, bollinger_band_df):
         bollinger_band_info = data_agent.get_bollinger_band(user_uid, sdate, edate, bollinger_band_df)
         if bollinger_band_info is None:
@@ -416,6 +315,7 @@ class ChannelHealthcareSessionService:
 
     def update_bollinger_band(self, user_uid, df):
         """
+        고정형 볼린저 밴드
         볼린저 밴드 및 볼린저 밴드 기반 TIR 계산 함수
         추후 TIR, Bollinger_TIR은 일자별로 분기 필요.
         """
