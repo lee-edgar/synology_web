@@ -63,8 +63,8 @@ class Portfolio_Channel_Layout():
         load_start_date = get_session_state(SESSION_LOAD_START_DATE)
         load_end_date= get_session_state(SESSION_LOAD_END_DATE)
 
-        self.draw_allday_graph(user_uid, load_start_date, load_end_date )
         self.draw_bollinger_bend_graph(user_uid, load_start_date, load_end_date)
+        self.draw_allday_graph(user_uid, load_start_date, load_end_date )
         self.draw_graph(user_uid, viz_start_date, viz_end_date)
         self.draw_sub_graph(user_uid, viz_start_date, viz_end_date)
         self.draw_table(user_uid, viz_start_date, viz_end_date)
@@ -278,6 +278,8 @@ class Portfolio_Channel_Layout():
         # 데이터를 시간 순으로 정렬
         df = df.sort_values(by=['date', 'std_time'])
 
+        # df = channel_healthcare_session_service.split_break_line(df)
+        # st.write('sbl', df)
         # 일자별 데이터프레임 저장
         daily_dataframes = []
 
@@ -302,6 +304,7 @@ class Portfolio_Channel_Layout():
         all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
         all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
 
+        st.write(all_daily_data)
         # Plotting
         if band_range:
             fig.add_trace(go.Scatter(
@@ -327,37 +330,21 @@ class Portfolio_Channel_Layout():
 
                 ))
 
-
     def plot_cgm(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
-        all_y_axis_values = []
-
         df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)
-        df['std_time'] = pd.to_datetime(df['std_time'])
 
-        # 고정식 bollinger
-        # channel_healthcare_session_service.get_bollinger_band(user_uid, sdate, edate, df[['std_time', 'bg']])
+        df['std_time'] = pd.to_datetime(df['std_time'])
         if mode == 'selected':
             df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
         elif mode == "all":
-
-            # 고정식 bollinger
-            # blb = channel_healthcare_session_service.get_bollinger_band(user_uid, sdate, edate, df[['std_time','bg']])
             pass
         else:
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
 
-        df = df[['std_time', 'bg']]
+        df_line_list = channel_healthcare_session_service.split_by_time_gap(df[['std_time', 'bg']])
+        all_y_axis_values = channel_healthcare_session_service.extract_values_from_segments(df_line_list)
 
-        if df.empty:
-            st.warning(MSG_NO_CGM_DATA)
-            return None
-
-        df_line_list = channel_healthcare_session_service.split_break_line(df)
-        if not df_line_list:
-            st.warning("No segments found in split_break_line.")
-            return
         for df_list in df_line_list:
-            all_y_axis_values.extend(df_list.bg.tolist())
             fig.add_trace(go.Scatter(x=df_list.std_time, y=df_list.bg, mode='lines', line=dict(color='blue')))
 
         y_axis_range = channel_healthcare_session_service.calculate_y_axis_range(all_y_axis_values, mode)

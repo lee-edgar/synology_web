@@ -137,7 +137,7 @@ class ChannelHealthcareSessionService:
                 return
             raise ValueError("marker_type must be 'max', 'min', or 'mean'")
 
-    def split_break_line(self, df: pd.DataFrame):
+    def split_by_time_gap(self, df: pd.DataFrame):
         # 30분 기준으로 데이터가 시각적으로 연속된 구간과 끊어진 구간을 구분할 수 있음.
         # 연속적인 구간과 비연속적인 구간을 강제로 잇게하면 신뢰성이 떨어지고, 라인 퀄리티가 떨어질 가능성이 있음.
 
@@ -396,6 +396,16 @@ class ChannelHealthcareSessionService:
         in_range_points = len(df[(df['bg'] >= lower_limit) & (df['bg'] <= upper_limit)])
         tir_percentage = (in_range_points / total_points) * 100 if total_points > 0 else 0
         return tir_percentage
+
+    def extract_values_from_segments(self, df_line_list):
+        all_y_axis_values=[]
+        if not df_line_list:
+            st.warning(MSG_NO_SPLIT_BREAK_LINE_DATA)
+            return
+        for df_list in df_line_list:
+            all_y_axis_values.extend(df_list.bg.tolist())
+        return all_y_axis_values
+
 
 
     # 미사용 함수
