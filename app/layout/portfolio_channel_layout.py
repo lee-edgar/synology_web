@@ -156,13 +156,14 @@ class Portfolio_Channel_Layout():
             st.error(f'{error_message}')
 
     def draw_bollinger_bend_graph(self, user_uid, sdate, edate):
-        col1, col2 = st.columns((1, 9))
+        col1, col2, col3 = st.columns((1, 7, 3))
         with col1:
             show_moving_avg = st.checkbox("Show Moving Average", value=True, key='bollinger_show_moving_avg')
             band_range = st.checkbox("Show Band Range (Upper/Lower)", value=True, key='bollinger_show_band_range')
             std_multiplier = st.slider("Select Standard Deviation Multiplier", 1.0, 3.0, 2.0, 0.1, key='bollinger_std_multiplier')
             window = st.slider("Select Moving Average Window", 5, 50, 10, 1, key='bollinger_window')
             smoothing_window = st.slider("Select Smoothing Window", 3, 20, 5, 1, key='bollinger_smoothing_window')
+
         with col2:
             fig = go.Figure()
             self.plot_cgm(fig, user_uid, sdate, edate, 'all')
@@ -171,6 +172,25 @@ class Portfolio_Channel_Layout():
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
 
+
+        with col3:
+            st.info(""" 
+                        1. 기존 CGM 그래프는 TIR 범위를 80~180 mg/dL로 제한하여, 혈당이 높은 환자에게 적절한 정보를 제공하지 못할 수 있습니다.
+                        볼린저 밴드는 혈당 데이터를 감싸는 안전 울타리와 같아, 환자별 혈당 패턴에 맞춘 개인화된 TIR 범위를 제공합니다.
+                        2. 주황색 영역은 안정적인 혈당 관리 상태를 나타내며, 이를 벗어나면 혈당 스파이크나 저혈당 위험으로 간주할 수 있습니다.
+                        초록색 이동 평균선은 전반적인 혈당 추세를 이해하는 가이드로, 환자가 안정적인 혈당 관리를 유지하고 있는지 확인할 수 있습니다.
+                        3. 이를 통해 환자는 자신의 데이터를 직관적으로 분석하고 맞춤형 관리 전략을 수립할 수 있으며, 볼린저 밴드는 환자 중심의 분석 도구로서 보다 효과적인 혈당 관리에 기여합니다.
+                        """, icon="ℹ️")
+            st.info("""
+                        표준 편차 배수 (Std Multiplier): 볼린저 밴드의 상한선과 하한선을 결정합니다.
+                        값이 작아질수록 밴드가 좁아져 민감하게 반응하며, 커질수록 밴드가 넓어져 변동성을 더 많이 수용합니다.
+    
+                        이동 평균 윈도우 (Moving Avg Window): 혈당의 전반적인 추세를 계산하는 데 사용됩니다.
+                        값이 작아질수록 짧은 기간의 변화를 잘 반영하며, 커질수록 장기적인 추세를 부드럽게 보여줍니다.
+    
+                        스무싱 윈도우 (Smoothing Window): 이동 평균과 볼린저 밴드를 부드럽게 표시합니다.
+                        값이 작아질수록 원본 데이터에 가깝게 표현되며, 커질수록 그래프가 부드럽고 노이즈가 줄어듭니다.
+                        """, icon="ℹ️")
 
     def draw_allday_graph(self, user_uid, sdate, edate):
         st.markdown('#### Overall Blood Glucose Trends')
@@ -304,8 +324,6 @@ class Portfolio_Channel_Layout():
         all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
         all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
 
-        st.write(all_daily_data)
-        # Plotting
         if band_range:
             fig.add_trace(go.Scatter(
                 x=all_daily_data['std_time'], y=all_daily_data['upper_band_smooth'],
@@ -327,7 +345,6 @@ class Portfolio_Channel_Layout():
                 mode='lines',
                 name='Moving Average (Smoothed)',
                 line=dict(color='green'),
-
                 ))
 
     def plot_cgm(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
