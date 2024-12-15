@@ -194,7 +194,8 @@ class Portfolio_Channel_Layout():
 
     def draw_allday_graph(self, user_uid, sdate, edate):
         st.markdown('#### Overall Blood Glucose Trends')
-        col1, col2 = st.columns((1, 9))
+        col1, col2, col3 = st.columns((1, 7, 3))
+
 
         with col1:
             meal_mode = st.radio("Select meal type:", ["Invisible", "Meal", "Meal Zone(4H)"], index=0, horizontal=True)
@@ -231,6 +232,21 @@ class Portfolio_Channel_Layout():
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
 
+        with col3:
+            st.info("""
+                                    Overall Blood Glucose Trends 페이지는 환자의 일상 혈당 데이터를 다각적으로 분석할 수 있도록 다양한 뷰를 제공합니다. 이 그래프에서는 볼린저 밴드, Meal Zone(식사 시간대), 운동 데이터, 일별 최고 혈당 값을 옵셔널하게 선택하여 시각화할 수 있습니다. 이를 통해 환자는 자신의 혈당 변화를 직관적으로 이해하고 맞춤형 혈당 관리 전략을 수립할 수 있습니다.
+
+                                    Meal Zone 개념 : Meal Zone은 식사 시작 시간부터 식사 시작 후 4시간까지의 구간을 나타냅니다. 식사 직후 혈당은 일반적으로 상승하기 시작하여 일정 시간 후 최고점에 도달하고, 이후 혈당이 정상 범위로 회복되는 패턴을 보입니다. 이 4시간 구간은 식사에 따른 혈당 변화를 명확하게 관찰할 수 있는 기준이 됩니다.
+
+                                    Meal Zone과 볼린저 밴드의 활용 : 볼린저 밴드는 식사 시간대 혈당의 변동성을 감싸는 개인화된 안전 영역을 제공합니다. Meal Zone과 볼린저 밴드를 함께 시각화하면 다음과 같은 해석이 가능합니다.
+                                    
+                                    Meal Zone의 혈당 상승 패턴 : 볼린저 밴드의 상한선(Upper Band)을 초과하는 경우, 식사 후 혈당이 과도하게 상승했음을 의미합니다. 이는 당뇨 환자나 고혈당 위험군에서 식후 스파이크(Postprandial Spike)로 해석될 수 있으며, 식사량 조절이나 식단 개선이 필요함을 시사합니다.
+                                    
+                                    Meal Zone 혈당 회복 패턴 : 볼린저 밴드 하한선(Lower Band)으로 내려가거나 지나치게 가까워진다면 저혈당 위험이 있음을 나타낼 수 있습니다. 특히 인슐린이나 약물을 사용하는 환자는 Meal Zone에서 저혈당이 발생하지 않도록 주의해야 합니다.
+                                    
+                                    다른 Meal Zone과의 비교 : 여러 Meal Zone을 비교하면 특정 시간대에 식사 후 혈당이 지속적으로 높아지는 패턴을 발견할 수 있습니다. 예를 들어, 저녁 식사 시간의 Meal Zone이 다른 시간대보다 자주 볼린저 밴드를 초과한다면, 해당 시간의 식단이나 활동량에 대한 재평가가 필요할 수 있습니다.
+                                    
+                                    """, icon="ℹ️")
 
 
 
