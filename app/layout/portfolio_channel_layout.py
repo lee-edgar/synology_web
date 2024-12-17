@@ -252,15 +252,19 @@ class Portfolio_Channel_Layout():
 
 
     def draw_graph(self, user_uid, sdate, edate):
-        st.markdown('#### Daily Summay')
-        fig = go.Figure()
-        self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
-        self.plot_exercise(fig, user_uid, sdate, edate, 'selected')
-        self.plot_meal(fig, user_uid, sdate, edate, 'selected')
-        self.plot_medicine(fig, user_uid, sdate)
-        fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=200)  # 마진 최소화
+        st.markdown('#### Daily Summary')
+        col1, col2, col3 = st.columns((1, 7, 3))
+        with col2:
+            fig = go.Figure()
+            self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
+            self.plot_exercise(fig, user_uid, sdate, edate, 'selected')
+            self.plot_meal(fig, user_uid, sdate, edate, 'selected')
+            self.plot_medicine(fig, user_uid, sdate)
+            fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=200)  # 마진 최소화
 
-        st.plotly_chart(fig , use_container_width=True)
+            st.plotly_chart(fig , use_container_width=True)
+        with col3:
+            st.info(""" Daily Summary는 선택한 기간의 식사(식사 시작 시간 ~ 식사 종료 시간이며, 'Meal Zone' 과는 무관함), 운동, 복약, 혈당, 최대 혈당값, 최소 혈당값 등을 간단하게 요약 된 그래프를 볼 수 있습니다. 좀 더 다양한 멀티모달 정보(물 섭취, 수면, 처치 및 치료)들을 추가로 업로드 하기에 적절합니다. """, icon="ℹ️")
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
         st.markdown('#### Meal Zone Analysis(4hours)')
@@ -292,6 +296,18 @@ class Portfolio_Channel_Layout():
             st.plotly_chart(fig, use_container_width=True)
 
         with col3:
+            st.info("""
+                                    일반적인 혈당의 y축 범위는  80~180 mg/dL이며, 그래프에서는 y축을 회색으로 표현하였습니다.
+
+                                    Meal Zone 개념 : Meal Zone은 식사 시작 시간부터 식사 시작 후 4시간까지의 구간을 나타냅니다. 식사 직후 혈당은 일반적으로 상승하기 시작하여 일정 시간 후 최고점에 도달하고, 이후 혈당이 정상 범위로 회복되는 패턴을 보입니다. 이 4시간 구간은 식사에 따른 혈당 변화를 명확하게 관찰할 수 있는 기준이 됩니다.
+
+                                    해당 분석 그래프는 Meal Zone 각각의 혈당 흐름과 최고 혈당, 최저 혈당을 볼 수 있으며, 혈당이 상승하거나 하강하는 패턴 등을 볼 수 있으며, 볼린저 밴드를 통해 적절한 식사를 통해 혈당 관리를 위한 식단을 잘 했는지, 혈당 관리를 위한 식단 관리에 미흡 했는지 등을 알 수 볼 수 있습니다.
+
+                                    혈당 그래프와 Meal Zone에 속한 식사를 보고 객관적으로 적절한 식사를 했는지 평가가 가능하며, 혈당 그래프를 보고 먹어도 되는 식단인지 먹으면 안되는 식단인지 어느정도 유추가 가능해 다음번 식단에 좋은 영향을 줄 수 있주 있습니다.
+
+                                    Meal Zone의 혈당 값이 일반적인 혈당의 범주에 속하게 된다면 TIR값을 받을 수 있으며, TIR값이 높을수록 혈당이 정상범주에 속했음을 알 수 있습니다. 대부분의 혈당이 높흔 환자군은 80~180 ml/dL범위를 크게 넘어서기에 TIR 값이 0이 나오며, 이때 개인화된 TIR을 보고 싶다면 볼린저 밴드를 통해 확인 할 수 있습니다.
+
+                                    """, icon="ℹ️")
             pass
 
 
@@ -418,7 +434,6 @@ class Portfolio_Channel_Layout():
                                                       label='Mean BG', mode=mode)
 
         fig.add_hrect(y0=70, y1=180, fillcolor='gray', opacity=0.09)
-
         fig.update_layout(
             yaxis=dict(range=y_axis_range, tickmode='linear', tick0=0, dtick=20, fixedrange=True),
             xaxis=dict(tickangle=0, automargin=True, dtick=x_axis_dtick, tickformat='%H시<br>%m-%d',

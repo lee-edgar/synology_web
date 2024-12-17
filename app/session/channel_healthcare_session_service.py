@@ -202,38 +202,66 @@ class ChannelHealthcareSessionService:
             return [60, 240]
 
 
-    def calculate_x_axis_range(self, sdate: datetime, edate: datetime, mode: str ) -> int:
+    # def calculate_x_axis_range(self, sdate: datetime, edate: datetime, mode: str ) -> int:
+    #     """
+    #     X축의 dtick 값을 계산합니다.
+    #
+    #     Args:
+    #         sdate (datetime): 시작 날짜
+    #         edate (datetime): 종료 날짜
+    #         mode (str): "selected" (기존 방식) 또는 "all" (전체 데이터용)
+    #
+    #     Returns:
+    #         int: dtick 값 (밀리초 단위)
+    #     """
+    #     days_diff = (edate - sdate).days  # edate - sdate로 변경 (양수로 계산)
+    #
+    #     if mode == "all":
+    #         # 전체 데이터의 경우 더 긴 기간을 가정하여 dtick 값 계산
+    #         if days_diff <= 7:
+    #             dtick_value = 43200 * 1000  # 12시간 간격
+    #         else:
+    #             dtick_value = 86400 * 1000  # 1일 간격
+    #     elif mode == "selected":
+    #         # 기존 로직 (선택된 데이터 범위 기준)
+    #         for day_limit in sorted(X_AXIS_DTICK_VALUES.keys(), reverse=True):
+    #             if days_diff <= day_limit:
+    #                 dtick_value = X_AXIS_DTICK_VALUES[day_limit]
+    #                 break
+    #         # else:
+    #             # dtick_value = X_AXIS_DTICK_VALUES[max(X_AXIS_DTICK_VALUES.keys())]  # 최대 범위 기본값
+    #         return X_AXIS_DTICK_VALUES[day_limit]
+    #     else:
+    #         raise ValueError("Invalid mode. Choose 'selected' or 'all'.")
+    #
+    #     return dtick_value
+
+    def calculate_x_axis_range(self, sdate: datetime, edate: datetime, mode: str) -> int:
         """
         X축의 dtick 값을 계산합니다.
 
         Args:
             sdate (datetime): 시작 날짜
             edate (datetime): 종료 날짜
-            mode (str): "selected" (기존 방식) 또는 "all" (전체 데이터용)
+            mode (str): "selected" 또는 "all"
 
         Returns:
             int: dtick 값 (밀리초 단위)
         """
-        days_diff = (edate - sdate).days  # edate - sdate로 변경 (양수로 계산)
+        days_diff = (edate - sdate).days
 
         if mode == "all":
-            # 전체 데이터의 경우 더 긴 기간을 가정하여 dtick 값 계산
-            if days_diff <= 7:
-                dtick_value = 43200 * 1000  # 12시간 간격
+            if days_diff >= 7:
+                return 43200 * 1000  # 12시간 간격
             else:
-                dtick_value = 86400 * 1000  # 1일 간격
+                return 86400 * 1000  # 1일 간격
         elif mode == "selected":
-            # 기존 로직 (선택된 데이터 범위 기준)
             for day_limit in sorted(X_AXIS_DTICK_VALUES.keys(), reverse=True):
-                if days_diff <= day_limit:
-                    dtick_value = X_AXIS_DTICK_VALUES[day_limit]
-                    break
-            else:
-                dtick_value = X_AXIS_DTICK_VALUES[max(X_AXIS_DTICK_VALUES.keys())]  # 최대 범위 기본값
+                if days_diff >= day_limit:
+                    return X_AXIS_DTICK_VALUES[day_limit]
         else:
             raise ValueError("Invalid mode. Choose 'selected' or 'all'.")
 
-        return dtick_value
 
     def extract_cgm_for_meal_zones(self, user_uid, sdate, edate, meal_zone_df):
 
