@@ -168,7 +168,7 @@ class Portfolio_Channel_Layout():
             fig = go.Figure()
             self.plot_cgm(fig, user_uid, sdate, edate, 'all')
             self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate),
-                                std_multiplier, window, smoothing_window, show_moving_avg, band_range)
+                                std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'all')
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
 
@@ -200,7 +200,7 @@ class Portfolio_Channel_Layout():
         with col1:
             meal_mode = st.radio("Select meal type:", ["Invisible", "Meal", "Meal Zone(4H)"], index=0, horizontal=True)
             exercise_mode = st.radio("Select exercise type", ["Invisible", "Visible"], index=0, horizontal=True)
-            bollinger_bend_mode = st.radio("Select bollinger bend type", ["Invisible", "Visible"], index=0,horizontal=True)
+            bollinger_bend_mode = st.radio("Select bollinger bend type", ["Invisible", "Visible"], index=0,horizontal=True, key='all_day_bollinger_bend_mode')
 
             if bollinger_bend_mode == 'Visible':
                 show_moving_avg = st.checkbox("Show Moving Average", value=True, key='normal_show_moving_avg')
@@ -226,7 +226,7 @@ class Portfolio_Channel_Layout():
                 self.plot_exercise(fig, user_uid, sdate, edate, 'all')
 
             if bollinger_bend_mode == 'Visible':
-                self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate), std_multiplier, window, smoothing_window, show_moving_avg, band_range)
+                self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate), std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'all')
             # self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate), std_multiplier, window, smoothing_window, show_moving_avg, band_range)
 
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
@@ -264,13 +264,35 @@ class Portfolio_Channel_Layout():
 
     def draw_sub_graph(self,  user_uid, sdate, edate):
         st.markdown('#### Meal Zone Analysis(4hours)')
-        col1, col2 = st.columns((1,9))
+        col1, col2, col3 = st.columns((1, 7, 3))
+
+        with col1:
+            bollinger_bend_mode = st.radio("Select bollinger bend type", ["Invisible", "Visible"], index=0,horizontal=True, key='daily_bollinger_bend_mode')
+            if bollinger_bend_mode == 'Visible':
+                show_moving_avg = st.checkbox("Show Moving Average", value=True, key='sub_show_moving_avg')
+                band_range = st.checkbox("Show Band Range (Upper/Lower)", value=True, key='sub_show_moving_avg_band_range')
+
+                std_multiplier = st.slider("Select Standard Deviation Multiplier", 1.0, 3.0, 2.0, 0.1, key='sub_show_moving_avg_std_multiplier')
+                window = st.slider("Select Moving Average Window", 5, 50, 10, 1, key='sub_show_moving_avg_window')
+                smoothing_window = st.slider("Select Smoothing Window", 3, 20, 5, 1, key='sub_show_moving_avg_smoothing_window')
+            else:
+                std_multiplier, window, smoothing_window = 2.0, 10, 5
+
         with col2:
             fig = go.Figure()
             self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
             self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
+
+            if bollinger_bend_mode == 'Visible':
+                self.bollinger_band(fig, user_uid,
+                                    channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate),
+                                    std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'selected')
+
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=300)
             st.plotly_chart(fig, use_container_width=True)
+
+        with col3:
+            pass
 
 
     def draw_table(self, user_uid, sdate, edate):
@@ -305,18 +327,18 @@ class Portfolio_Channel_Layout():
                 sdate)
             )
 
-    def bollinger_band(self, fig, user_uid, df, std_multiplier, window, smoothing_window, show_moving_avg, band_range):
-
-        # std_time 열을 datetime 형식으로 변환
+    def bollinger_band(self, fig, user_uid, df, std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, mode):
         df['std_time'] = pd.to_datetime(df['std_time'])
         df['date'] = df['std_time'].dt.date
-
-        # 데이터를 시간 순으로 정렬
         df = df.sort_values(by=['date', 'std_time'])
 
-        # df = channel_healthcare_session_service.split_break_line(df)
-        # st.write('sbl', df)
-        # 일자별 데이터프레임 저장
+        if mode == 'selected':
+            df = df[(df['std_time'] >= sdate) & (df['std_time'] < edate)]
+        elif mode == "all":
+            pass
+        else:
+            raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
+
         daily_dataframes = []
 
         for date, daily_df in df.groupby('date'):
@@ -395,7 +417,7 @@ class Portfolio_Channel_Layout():
         channel_healthcare_session_service.add_marker(fig, df, column='bg', marker_type='mean', color='purple',
                                                       label='Mean BG', mode=mode)
 
-        fig.add_hrect(y0=70, y1=180, fillcolor='yellow', opacity=0.09)
+        fig.add_hrect(y0=70, y1=180, fillcolor='gray', opacity=0.09)
 
         fig.update_layout(
             yaxis=dict(range=y_axis_range, tickmode='linear', tick0=0, dtick=20, fixedrange=True),
@@ -581,7 +603,7 @@ class Portfolio_Channel_Layout():
                     fig.add_vrect(
                         x0=start_time_dt,
                         x1=meal_zone_time,
-                        fillcolor='rgba(255, 0, 0, 0.2)',
+                        fillcolor='rgba(255, 0, 0, 0.1)',
                         line_width=0.3,
                     )
 
@@ -592,11 +614,9 @@ class Portfolio_Channel_Layout():
                         mode='markers+text',
                         marker=dict(size=20, color='black', symbol='circle'),
                         text=[
-                            f"{row['meal_div_code']}<br>"
-                            f"Start: {row['start_time']}<br>"
-                            f"End: {row['end_time']}<br>"
-                            f"TOP_BG: {row['top_bg']}<br>"
-                            f"TIR: {row['tir']}<br>"
+                            f"{row['meal_div_code']}(TIR: {row['tir']})<br> "
+                            f"<br>"
+                            f"<br>"
                         ],
                         textposition="top center",
                         hoverinfo='text',
