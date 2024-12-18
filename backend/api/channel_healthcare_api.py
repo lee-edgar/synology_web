@@ -4,11 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from backend.db.session import get_db
-from backend.schemas.channel_healthcare_schemas import CGMHistoryBase, CGMHistoryResponse, EXERCISEHistoryResponse, MEDICINEHistoryResponse, MEALHistoryResponse
-from backend.models.channel_healthcare_model import CGMHistory as CGMHistoryModel
+from backend.schemas.channel_healthcare_schemas import CGMHistoryBase, CGMHistoryResponse, EXERCISEHistoryResponse, MEDICINEHistoryResponse, MEALHistoryResponse, MEALFOODHistoryResponse
+from backend.models.channel_healthcare_model import CGMHistory as CGMHistoryModel, MEALFOOD_History
 from backend.models.channel_healthcare_model import EXERCISE_History as EXERCISE_HistoryModel
 from backend.models.channel_healthcare_model import MEALS_History as MEAL_HistoryModel
 from backend.models.channel_healthcare_model import MEDICINE_History as MEDICINE_HistoryModel
+from backend.models.channel_healthcare_model import MEALFOOD_History as MEALFOOD_HistoryModel
 from loguru import logger
 
 
@@ -153,3 +154,36 @@ def read_medicine(user_uid : int, regist_time : datetime, db : Session = Depends
         )
 
     return medicine_data
+
+@router.get("/meal_food", response_model=List[MEALFOODHistoryResponse], tags=["ChannelHealthcare"])
+def read_meal_food(meal_id : int, db : Session = Depends(get_db)):
+    try:
+        mealfood_data = db.query(MEALFOOD_HistoryModel).filter(
+            MEALFOOD_History.meal_id == meal_id
+        ).order_by(MEALFOOD_History.meal_id).all()
+
+        # 데이터가 없을 경우 404 반환
+        if not mealfood_data:
+            logger.warning(f"No meal_food data found for meal_id {meal_id}")
+            raise HTTPException(
+                status_code=404,
+                detail=f"No meal_food data found for meal_id {meal_id}"
+            )
+
+        # 데이터가 있는 경우 반환
+        logger.info(f"Fetched {len(mealfood_data)} meal_food records for meal_id {meal_id}.")
+        return mealfood_data
+
+    except HTTPException as e:
+        # HTTPException은 그대로 반환
+        raise e
+
+    except Exception as e:
+        # 예상치 못한 오류: 500 반환
+        logger.error(f"Unexpected error: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Internal server error: {str(e)}"
+        )
+    return mealfood_data
+

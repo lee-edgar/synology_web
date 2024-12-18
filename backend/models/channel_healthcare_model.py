@@ -3,6 +3,7 @@ from sqlalchemy import Column, Integer, String, DateTime, Float
 from sqlalchemy.sql import func
 from backend.models.base import Base
 from sqlalchemy.dialects.mysql import ENUM  # MySQL ENUM 타입 사용
+from datetime import datetime
 
 class CGMHistory(Base):
     __tablename__ = "ch_cgm_history"
@@ -88,3 +89,22 @@ class MEDICINE_History(Base):
     modify_time = Column(DateTime, nullable=False)
     company = Column(String(100), nullable=False)
     created_at = Column(DateTime)
+
+class MEALFOOD_History(Base):
+    __tablename__ ="ch_meal_food"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    record_type = Column(String(100), nullable=False)
+    meal_id = Column(Integer, nullable=False)
+    food_id = Column(Integer, nullable=False)
+    food_name = Column(String(100), nullable=False, default="Unknown")
+    serving_unit = Column(String(100), nullable=False, default="N/A")
+    intake_amount = Column(Float, nullable=False, default=0.0)
+    dc_ratio = Column(Float, nullable=False, default=0.0)
+    photo_seed = Column(String(100), nullable=False, default="")
+    minx = Column(Integer, nullable=False, default=0)
+    maxx = Column(Integer, nullable=False, default=0)
+    miny = Column(Integer, nullable=False, default=0)
+    maxy = Column(Integer, nullable=False, default=0)
+    regist_time = Column(DateTime, default=datetime.utcnow)
+    modify_time = Column(DateTime, nullable=False, default=datetime.utcnow)
+    modifier_uid = Column(Integer, default=0)

@@ -579,8 +579,7 @@ class Portfolio_Channel_Layout():
             st.warning("No meal data available for the selected range.")
             return None
         # channel_healthcare_session_service.extract_cgm_for_meal_zones(sdate, edate)
-
-        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir']]
+        df = df[['start_time', 'end_time', 'meal_div_code', 'top_bg', 'tir', 'meal_id']]
         df['start_time'] = pd.to_datetime(df['start_time'])
         df['end_time'] = pd.to_datetime(df['end_time'])
 
@@ -629,7 +628,7 @@ class Portfolio_Channel_Layout():
                         mode='markers+text',
                         marker=dict(size=20, color='black', symbol='circle'),
                         text=[
-                            f"{row['meal_div_code']}(TIR: {row['tir']})<br> "
+                            f"{row['meal_div_code']}(TIR:{row['tir']}  ID:{row['meal_id']})<br> "
                             f"<br>"
                             f"<br>"
                         ],

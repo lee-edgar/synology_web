@@ -98,3 +98,29 @@ class MEDICINEHistoryResponse(MEDICINEHistoryBase):
 
     class Config:
         from_attributes = True
+
+class MEALFOODHistoryBase(BaseModel):
+    id: int
+    record_type: str
+    meal_id: int
+    food_id: int
+    food_name: Optional[str] = None
+    serving_unit: Optional[str] = None
+    intake_amount: Optional[float] = None
+    intake_calories: Optional[int] = None
+    intake_date: Optional[datetime] = None
+    dc_ratio: Optional[float] = None
+    photo_seed: Optional[str] = None
+    minx: Optional[int] = None
+    maxx: Optional[int] = None
+    miny: Optional[int] = None
+    maxy: Optional[int] = None
+    regist_time: Optional[datetime] = None
+    modifier_uid: Optional[int] = None
+    modify_time: Optional[datetime] = None
+
+class MEALFOODHistoryResponse(MEALFOODHistoryBase):
+    id: int
+
+    class Config:
+        from_attributes = True
