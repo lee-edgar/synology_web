@@ -41,6 +41,12 @@ class ChannelHealthcareSessionService:
             return None
         return pd.DataFrame(meal_info)
 
+    def get_meal_food_data(self, meal_id:int):
+        meal_food_info  = data_agent.get_meal_food(meal_id)
+        if meal_food_info is None:
+            return None
+        return meal_food_info
+
     def get_medicine_data(self, user_uid: int, sdate: date):
         medicine_info = data_agent.get_medicine(user_uid, sdate)
 

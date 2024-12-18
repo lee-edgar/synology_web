@@ -15,7 +15,7 @@ class DataManager:
         self.meal_dict = {}
         self.medicine_dict = {}
         self.bollinger_band_dict = {}
-
+        self.meal_food_dict = {}
 
     def get_cgm(self, user_uid: int, sdate: date, edate: date) -> Optional[Dict[str, Any]]:
         cgm_info: dict = self.cgm_dict.get(user_uid)
@@ -61,6 +61,21 @@ class DataManager:
             exercise_info[user_uid] = exercise_json_data
         else:
             self.exercise_dict[user_uid] = exercise_json_data
+
+    def get_meal_food(self, meal_id:int) -> Optional[Dict[str, Any]]:
+        meal_food_info : dict = self.meal_food_dict.get(meal_id)
+        if meal_food_info is None:
+            return None
+        return meal_food_info
+
+    def update_meal_food(self, meal_id:int, meal_food_json_data:Dict[str, Any]) -> None:
+        meal_food_info = self.meal_food_dict.get(meal_id)
+        if meal_food_info is not None:
+            meal_food_info[meal_id] = meal_food_info
+        else:
+            self.meal_food_dict[meal_id] = meal_food_info
+
+
 
     def get_meal(self, user_uid: int, sdate: date, edate: date) -> Optional[Dict[str, Any]]:
         meal_info: dict = self.meal_dict.get(user_uid)

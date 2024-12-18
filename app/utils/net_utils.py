@@ -3,7 +3,7 @@ from http.client import responses
 import requests
 import json
 from datetime import datetime
-from app.common.common import GET_CGM, GET_EXERCISE, GET_MEAL, GET_MEDICINE
+from app.common.common import GET_CGM, GET_EXERCISE, GET_MEAL, GET_MEDICINE, GET_MEAL_FOOD
 from typing import Optional
 
 from loguru import logger
@@ -67,6 +67,19 @@ class NetUtil:
         except requests.exceptions.RequestException as e:
             st.sidebar.error(f"Request failed: {e}")
             return None
+
+    def get_meal_food(self, meal_id:int) -> Optional[dict]:
+        params = {
+            "meal_id": meal_id
+        }
+        url = f'{GET_MEAL_FOOD}'
+        response = requests.get(url=url, params=params)
+        if response.status_code != 200:
+            logger.error(f"Failed to get meal info with meal_id{meal_id}. status_code: {response.status_code}")
+            return None
+
+        return response
+
 
     def get_meal(self, user_uid: int, start_time: datetime, end_time: datetime) -> Optional[dict]:
         params = {

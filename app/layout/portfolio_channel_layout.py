@@ -11,7 +11,7 @@ from app.utils.streamlit_utils import get_session_state, update_session_state, i
     str2datetime_strptim, format_date_range
 import plotly.graph_objects as go
 import pandas as pd
-
+from typing import List
 from backend.service.bollinger_band_service import bollinger
 
 
@@ -286,14 +286,18 @@ class Portfolio_Channel_Layout():
             fig = go.Figure()
             self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
             self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
-
             if bollinger_bend_mode == 'Visible':
                 self.bollinger_band(fig, user_uid,
                                     channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate),
                                     std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'selected')
+            # if get_session_state(SESSION_MEAL_ID) is not
+            #     update_session_state(SESSION_MEAL_ID, df['meal_id'].dropna().unique().tolist())
 
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=300)
             st.plotly_chart(fig, use_container_width=True)
+            st.write('ℹ️ 칼로리는 더미로 생성하였으며, 탄,단,지 등의 섭취정보 DB가 있으면 일일 권장 섭취량 등의 자세한 설명 가능')
+            self.plot_meal_food(get_session_state(SESSION_MEAL_ID))
+
 
         with col3:
             st.info("""
@@ -309,6 +313,8 @@ class Portfolio_Channel_Layout():
 
                                     """, icon="ℹ️")
             pass
+
+
 
 
     def draw_table(self, user_uid, sdate, edate):
@@ -561,7 +567,23 @@ class Portfolio_Channel_Layout():
         else:
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
 
-    # 리펙토링 원본
+
+
+    def plot_meal_food(self, meal_ids: list):
+        cols = st.columns(len(meal_ids))  # meal_ids 개수만큼 컬럼 생성
+        for idx, meal_id in enumerate(meal_ids):
+            with cols[idx]:
+                food_data = channel_healthcare_session_service.get_meal_food_data(meal_id)
+
+                meal_df = pd.DataFrame(food_data, columns=["food_name", "serving_unit"])
+                meal_df.insert(0, "meal_id", meal_id)  # meal_id 컬럼 추가
+                meal_df['칼로리'] = meal_df['food_name'].apply(lambda x: FOOD_CALORIES_DUMMY.get(x, 0))
+                meal_df.columns = ["식사ID", "음식", "용기", "칼로리"]
+                total_calories = meal_df['칼로리'].sum()
+                st.write(f"### Meal Zone{idx+1}(총 칼로리:{total_calories})")
+                st.dataframe(meal_df)
+
+
     def plot_meal_zone(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
         """
         Meal Zone Plot Function with mode parameter.
@@ -606,6 +628,9 @@ class Portfolio_Channel_Layout():
             viz_start_date = get_session_state(SESSION_VIZ_START_DATE)
             viz_end_date = get_session_state(SESSION_VIZ_END_DATE)
             df = df[(df['start_time'] >= viz_start_date) & (df['end_time'] <= viz_end_date)]
+
+            update_session_state(SESSION_MEAL_ID, df['meal_id'].dropna().unique().tolist())
+
             extract_meal_zone_df = channel_healthcare_session_service.extract_cgm_for_meal_zones(user_uid, sdate, edate, df)
             for _, row in df.iterrows():
                 start_time_dt = pd.to_datetime(row['start_time'])
@@ -664,6 +689,8 @@ class Portfolio_Channel_Layout():
                     hoverinfo='text',
                     name=f"Min BG ({row['meal_div_code']})"
                 ))
+
+
         #
         #
         # else:

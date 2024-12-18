@@ -88,6 +88,29 @@ class DataAgent:
         return exercise_json_data
 
 
+    def get_meal_food(self, meal_id:int):
+        meal_food_list = []
+        meal_food_info = data_manager.get_meal_food(meal_id)
+
+        if meal_food_info is not None:
+            meal_food_list.extend(meal_food_info)
+        elif meal_food_info is None:
+            meal_food = self.update_meal_food(meal_id)
+
+            if meal_food is not None:
+                meal_food_list.extend(meal_food)
+        return meal_food_list
+
+    def update_meal_food(self, meal_id:int) -> Optional[dict]:
+        response = net_util.get_meal_food(meal_id)
+        if response is None:
+            return None
+
+        meal_food_json_data = response.json()
+        if meal_food_json_data is None:
+            return None
+        data_manager.update_meal_food(meal_id, meal_food_json_data)
+        return meal_food_json_data
 
 
     def get_meal(self, user_uid, sdate, edate) -> Optional[dict]:
