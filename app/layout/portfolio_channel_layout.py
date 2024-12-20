@@ -157,18 +157,21 @@ class Portfolio_Channel_Layout():
 
     def draw_bollinger_bend_graph(self, user_uid, sdate, edate):
         col1, col2, col3 = st.columns((1, 7, 3))
+
         with col1:
             show_moving_avg = st.checkbox("Show Moving Average", value=True, key='bollinger_show_moving_avg')
             band_range = st.checkbox("Show Band Range (Upper/Lower)", value=True, key='bollinger_show_band_range')
             std_multiplier = st.slider("Select Standard Deviation Multiplier", 1.0, 3.0, 2.0, 0.1, key='bollinger_std_multiplier')
             window = st.slider("Select Moving Average Window", 5, 50, 10, 1, key='bollinger_window')
             smoothing_window = st.slider("Select Smoothing Window", 3, 20, 5, 1, key='bollinger_smoothing_window')
-
         with col2:
             fig = go.Figure()
             self.plot_cgm(fig, user_uid, sdate, edate, 'all')
-            self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate),
+            fig, bollinger_tir_df = self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate),
                                 std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'all')
+            col1.write(f"### Bollinger TIR ")
+            col1.write(bollinger_tir_df)
+
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
 
@@ -226,9 +229,9 @@ class Portfolio_Channel_Layout():
                 self.plot_exercise(fig, user_uid, sdate, edate, 'all')
 
             if bollinger_bend_mode == 'Visible':
-                self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate), std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'all')
-            # self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate), std_multiplier, window, smoothing_window, show_moving_avg, band_range)
-
+                fig, bollinger_tir_df = self.bollinger_band(fig, user_uid, channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate), std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'all')
+                col1.write(f"### Bollinger TIR ")
+                col1.write(bollinger_tir_df)
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
 
@@ -287,12 +290,12 @@ class Portfolio_Channel_Layout():
             self.plot_cgm(fig, user_uid, sdate, edate, 'selected')
             self.plot_meal_zone(fig, user_uid, sdate, edate, 'selected')
             if bollinger_bend_mode == 'Visible':
-                self.bollinger_band(fig, user_uid,
+                fig, bollinger_tir_df = self.bollinger_band(fig, user_uid,
                                     channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate),
                                     std_multiplier, window, smoothing_window, show_moving_avg, band_range, sdate, edate, 'selected')
-            # if get_session_state(SESSION_MEAL_ID) is not
-            #     update_session_state(SESSION_MEAL_ID, df['meal_id'].dropna().unique().tolist())
 
+                col1.write(f"### Bollinger TIR")
+                col1.write(bollinger_tir_df)
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=300)
             st.plotly_chart(fig, use_container_width=True)
             st.write('ℹ️ 칼로리는 더미로 생성하였으며, 탄,단,지 등의 섭취정보 DB가 있으면 일일 권장 섭취량 등의 자세한 설명 가능')
@@ -362,7 +365,7 @@ class Portfolio_Channel_Layout():
             raise ValueError("Invalid mode. Choose 'all' or 'selected'.")
 
         daily_dataframes = []
-
+        bollinger_tir_data = []
         for date, daily_df in df.groupby('date'):
 
             if len(daily_df) < window:
@@ -375,14 +378,22 @@ class Portfolio_Channel_Layout():
             daily_df['upper_band'] = daily_df['moving_avg'] + (std_multiplier * daily_df['moving_std'])
             daily_df['lower_band'] = daily_df['moving_avg'] - (std_multiplier * daily_df['moving_std'])
 
+            bollinger_tir_value = channel_healthcare_session_service.calculate_bollinger_tir(daily_df)
+            bollinger_tir_data.append({'date': date, 'Bollinger TIR(%)': bollinger_tir_value})
+
             daily_dataframes.append(daily_df)
 
         all_daily_data = pd.concat(daily_dataframes)
-
         all_daily_data['bg_smooth'] = all_daily_data['bg'].rolling(window=smoothing_window).mean()
         all_daily_data['upper_band_smooth'] = all_daily_data['upper_band'].rolling(window=smoothing_window).mean()
         all_daily_data['lower_band_smooth'] = all_daily_data['lower_band'].rolling(window=smoothing_window).mean()
         all_daily_data['moving_avg_smooth'] = all_daily_data['moving_avg'].rolling(window=smoothing_window).mean()
+
+        # 전체 Bollinger Band TIR
+        overall_bollinger_tir = channel_healthcare_session_service.calculate_bollinger_tir(all_daily_data)
+        bollinger_tir_df = pd.DataFrame(bollinger_tir_data)
+        bollinger_tir_df.loc[len(bollinger_tir_df)] = {'date': '전체 평균', 'Bollinger TIR(%)': overall_bollinger_tir}
+
 
         if band_range:
             fig.add_trace(go.Scatter(
@@ -406,6 +417,7 @@ class Portfolio_Channel_Layout():
                 name='Moving Average (Smoothed)',
                 line=dict(color='green'),
                 ))
+        return fig, bollinger_tir_df
 
     def plot_cgm(self, fig, user_uid: int, sdate: datetime, edate: datetime, mode: str):
         df = channel_healthcare_session_service.get_cgm_data(user_uid, sdate, edate)

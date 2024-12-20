@@ -441,7 +441,6 @@ class ChannelHealthcareSessionService:
         return all_y_axis_values
 
 
-
     # 미사용 함수
     # def update_navigatation(self):
     #     __, __, col1, col2, col3 = st.columns((0.5, 1, 1, 1, 1))
