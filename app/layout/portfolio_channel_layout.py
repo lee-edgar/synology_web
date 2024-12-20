@@ -51,7 +51,12 @@ class Portfolio_Channel_Layout():
         그래프 및 테이블 렌더링 호출
         """
 
-        st.markdown(f"{CHANNEL_HEALTHCARE_MARKDOWN}")
+        st.error(""" 
+                이 페이지는 채널헬스케어에서 준비했던 당뇨 관리 서비스의 주요 기능 중 일부를 새롭게 재구성한 결과물입니다. 
+                약 300여 명의 베타테스터들과 함께 실질적인 테스트를 진행한 후 도출된 결과에 기반하였습니다.
+                제가 가지고 있는 Synology NAS 환경에서 FastAPI와 Streamlit을 활용해 MVC 패턴을 기반으로 설계 및 구현하였으며, 기존 회사 소스를 사용하지 않고 새롭게 개발했습니다. 
+                데이터는 유사한 더미 데이터를 생성해 활용했습니다. 특히, 볼린저 밴드 분석 기능 등 제가 생각했던 아이디어를 반영한 것으로, 혈당 데이터를 개인화된 범위에서 분석 및 시각화할 수 있도록 설계되었음을 알립니다.
+                """)
 
 
         # channel_healthcare_session_service.draw_user_navigation()
@@ -63,16 +68,27 @@ class Portfolio_Channel_Layout():
         load_start_date = get_session_state(SESSION_LOAD_START_DATE)
         load_end_date= get_session_state(SESSION_LOAD_END_DATE)
 
+        self.draw_summary(user_uid, viz_start_date, viz_end_date)
+        st.write('---')
+        self.draw_mealzone_graph(user_uid, viz_start_date, viz_end_date)
+        st.write('---')
         self.draw_bollinger_bend_graph(user_uid, load_start_date, load_end_date)
+        st.write('---')
         self.draw_allday_graph(user_uid, load_start_date, load_end_date )
-        self.draw_graph(user_uid, viz_start_date, viz_end_date)
-        self.draw_sub_graph(user_uid, viz_start_date, viz_end_date)
-        self.draw_table(user_uid, viz_start_date, viz_end_date)
+        st.write('---')
+
+        # 개인정보 관련으로 인해 hide
+        # self.draw_table(user_uid, viz_start_date, viz_end_date)
 
     def draw_user_info(self):
-
-        col1, col2, col3, col4, col5 = st.columns((1, 1, 1, 1, 1))
+        st.info(""" 시각화 하고자 하는 유저를 선택 할 수 있습니다. 캘린더를 이용하여 원하는 날짜를 지정 할 수 있으며, 화살표 버튼으로 이전날짜와 이후날짜를 선택 할 수 있습니다. 
+        캘린더의 기간을 3일 선택을 하고 이전과 이후를 누른다면 해당 기간만큼 날짜가 미뤄지고 땡겨집니다. 추가로, 이 페이지는 인터렉티브한 데이터 시각화 기능을 통해 데이터를 동적으로 분석할 수 있도록 설계하였습니다. """, icon="ℹ️")
+        col1, col2, col3, col4, col5 = st.columns((1, 0.5, 1, 1, 1))
         error_message = None
+
+        with col1:
+            st.write(""" 187: 열심히 관리하는 당뇨 초기 환자 / 350: 일반적인 당뇨 환자 """)
+
 
         with col2 :
             selected_user = st.selectbox(" 유저 선택 ", USER_GROUP, index=0,  label_visibility='collapsed')
@@ -155,7 +171,12 @@ class Portfolio_Channel_Layout():
         if error_message is not None:
             st.error(f'{error_message}')
 
+
+
+
     def draw_bollinger_bend_graph(self, user_uid, sdate, edate):
+        st.markdown('#### Bollinger Bend Glucose Trends')
+
         col1, col2, col3 = st.columns((1, 7, 3))
 
         with col1:
@@ -174,25 +195,37 @@ class Portfolio_Channel_Layout():
 
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
+            st.write("""ℹ️ 연속혈당 데이터의 정확한 판단을 위한 최소 기간인 2주 데이터를 표시합니다.""")
 
-
-        with col3:
+        with col3.expander('설명', expanded=True):
             st.info(""" 
-                        1. 기존 CGM 그래프는 TIR 범위를 80~180 mg/dL로 제한하여, 혈당이 높은 환자에게 적절한 정보를 제공하지 못할 수 있습니다.
-                        볼린저 밴드는 혈당 데이터를 감싸는 안전 울타리와 같아, 환자별 혈당 패턴에 맞춘 개인화된 TIR 범위를 제공합니다.
-                        2. 주황색 영역은 안정적인 혈당 관리 상태를 나타내며, 이를 벗어나면 혈당 스파이크나 저혈당 위험으로 간주할 수 있습니다.
-                        초록색 이동 평균선은 전반적인 혈당 추세를 이해하는 가이드로, 환자가 안정적인 혈당 관리를 유지하고 있는지 확인할 수 있습니다.
-                        3. 이를 통해 환자는 자신의 데이터를 직관적으로 분석하고 맞춤형 관리 전략을 수립할 수 있으며, 볼린저 밴드는 환자 중심의 분석 도구로서 보다 효과적인 혈당 관리에 기여합니다.
+                        기존 CGM(Continuous Glucose Monitoring) 그래프는 TIR 범위를 80~180 mg/dL로 제한하여, 혈당이 높은 환자에게 적절한 정보를 제공하지 못하는 한계가 있습니다.
+                        이에 반해 볼린저 밴드는 혈당 데이터를 감싸는 개인화된 안전 범위를 제공하여 환자별 혈당 패턴에 맞춘 TIR 범위를 분석 할 수 있습니다.
+                        
+                        **주황색 영역**  
+                        안정적인 혈당 관리 상태를 나타냅니다. 이 영역을 벗어날 경우, 혈당 스파이크(고혈당), 저혈당 위험으로 간주할 수 있습니다.
+                        
+                        **초록색 이동 평균선**  
+                        전반적인 혈당 추세를 이해하는 가이드로, 환자가 안정적인 혈당 관리를 유지하고 있는지 확인할 수 있는 지표입니다.
+                        
+                        볼린저 밴드는 환자 중심의 분석을 가능하게 하며, 혈당 데이터를 직관적으로 이해하고 맞춤형 관리 전략을 수립하는데 도움을 줄 수 있습니다. 볼린저 밴드는 더 나은 혈당 관리를 위한 강력한 도구로, 환자의 혈당 상태를 보다 효과적으로 지원합니다.
                         """, icon="ℹ️")
-            st.info("""
-                        표준 편차 배수 (Std Multiplier): 볼린저 밴드의 상한선과 하한선을 결정합니다.
+            st.info(""" 
+                        #### 좌측 옵션 사이드바
+                        
+                        **표준 편차 배수 (Std Multiplier)**  
+                        볼린저 밴드의 상한선과 하한선을 결정합니다.
                         값이 작아질수록 밴드가 좁아져 민감하게 반응하며, 커질수록 밴드가 넓어져 변동성을 더 많이 수용합니다.
     
-                        이동 평균 윈도우 (Moving Avg Window): 혈당의 전반적인 추세를 계산하는 데 사용됩니다.
+                        **이동 평균 윈도우 (Moving Avg Window)**  
+                         혈당의 전반적인 추세를 계산하는 데 사용됩니다.
                         값이 작아질수록 짧은 기간의 변화를 잘 반영하며, 커질수록 장기적인 추세를 부드럽게 보여줍니다.
     
-                        스무싱 윈도우 (Smoothing Window): 이동 평균과 볼린저 밴드를 부드럽게 표시합니다.
+                        **스무싱 윈도우 (Smoothing Window)**  
+                        이동 평균과 볼린저 밴드를 부드럽게 표시합니다.
                         값이 작아질수록 원본 데이터에 가깝게 표현되며, 커질수록 그래프가 부드럽고 노이즈가 줄어듭니다.
+                        
+                        좌측 옵션 사이드바의 값을 변경하면 하단 Bollinger TIR값도 변경되는 동적인 기능
                         """, icon="ℹ️")
 
     def draw_allday_graph(self, user_uid, sdate, edate):
@@ -234,27 +267,35 @@ class Portfolio_Channel_Layout():
                 col1.write(bollinger_tir_df)
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10), height=500)
             st.plotly_chart(fig, use_container_width=True)
+            st.write("""ℹ️ 연속혈당 데이터의 정확한 판단을 위한 최소 기간인 2주 데이터를 표시합니다.""")
 
-        with col3:
+
+        with col3.expander('설명', expanded=True):
             st.info("""
-                                    Overall Blood Glucose Trends 페이지는 환자의 일상 혈당 데이터를 다각적으로 분석할 수 있도록 다양한 뷰를 제공합니다. 이 그래프에서는 볼린저 밴드, Meal Zone(식사 시간대), 운동 데이터, 일별 최고 혈당 값을 옵셔널하게 선택하여 시각화할 수 있습니다. 이를 통해 환자는 자신의 혈당 변화를 직관적으로 이해하고 맞춤형 혈당 관리 전략을 수립할 수 있습니다.
+                                    Overall Blood Glucose Trend는 환자의 혈당 데이터를 심층적으로 분석할 수 있는 다양한 도구와 시각적 요소를 제공합니다. 사용자는 볼린저 밴드, Meal Zone(식사 시간대), 운동 데이터, 일별 최고 혈당 값 등의 요소를 조합하여 자신만의 혈당 패턴을 직관적으로 파악하고, 맞춤형 혈당 관리 전략을 수립할 수 있습니다.
 
-                                    Meal Zone 개념 : Meal Zone은 식사 시작 시간부터 식사 시작 후 4시간까지의 구간을 나타냅니다. 식사 직후 혈당은 일반적으로 상승하기 시작하여 일정 시간 후 최고점에 도달하고, 이후 혈당이 정상 범위로 회복되는 패턴을 보입니다. 이 4시간 구간은 식사에 따른 혈당 변화를 명확하게 관찰할 수 있는 기준이 됩니다.
-
-                                    Meal Zone과 볼린저 밴드의 활용 : 볼린저 밴드는 식사 시간대 혈당의 변동성을 감싸는 개인화된 안전 영역을 제공합니다. Meal Zone과 볼린저 밴드를 함께 시각화하면 다음과 같은 해석이 가능합니다.
+                                    **옵션을 활용한 심화 분석**  
+                                    Select Meal Type : 개별 식사 시간대 또는 Meal Zone을 시각화하여 각 식사와 혈당 변화를 연결할 수 있습니다.
+                                    Select Exercis Type : 운동 시간이 포함된 데이터를 시각화하여 혈당 조절에 운동이 미친 영향을 분석할 수 있습니다.
+                                    Select Bollinger Band Type : 볼린저 밴드를 활성화하여 혈당 변동성을 직관적으로 파악하고 안정적인 혈당 관리 상태를 확인할 수 있습니다.
                                     
-                                    Meal Zone의 혈당 상승 패턴 : 볼린저 밴드의 상한선(Upper Band)을 초과하는 경우, 식사 후 혈당이 과도하게 상승했음을 의미합니다. 이는 당뇨 환자나 고혈당 위험군에서 식후 스파이크(Postprandial Spike)로 해석될 수 있으며, 식사량 조절이나 식단 개선이 필요함을 시사합니다.
+                                    **Meal Zone 개념**  
+                                    Meal Zone은 식사 시작 시간부터 4시간 동안의 혈당 변화를 분석하기 위한 구간입니다. 이 시간 동안 혈당은 일반적으로 상승 후 정상 범위로 회복됩니다. 이 구간을 통해 식사 후 혈당의 상승과 회복 패턴을 명확히 관찰할 수 있습니다.
+                                    볼린저 밴드는 개인화된 혈당 변동 영역을 제공하며, 식사 시간대의 혈당 관리를 평가 하는 데 효과적입니다.
                                     
-                                    Meal Zone 혈당 회복 패턴 : 볼린저 밴드 하한선(Lower Band)으로 내려가거나 지나치게 가까워진다면 저혈당 위험이 있음을 나타낼 수 있습니다. 특히 인슐린이나 약물을 사용하는 환자는 Meal Zone에서 저혈당이 발생하지 않도록 주의해야 합니다.
+                                    **볼린저 밴드 활용**  
+                                    볼린저 밴드는 개인화된 혈당 변동 영역을 제공하며, 식사 시간대의 혈당 관리를 평가하는데 효과적입니다.
+                                    볼린저 밴드 상한선(Upper Band)을 초과하면 식후 혈당 스파이크가 발생했음을 나타내며, 이는 식사량 조절인 ㅏ식단 개선이 필요함을 시사합니다.
+                                    볼린저 밴드 하한선(Lower Band)에 도달하거나 근접하면 저혈당 위험이 있음을 나타낼 수 있습니다.
                                     
-                                    다른 Meal Zone과의 비교 : 여러 Meal Zone을 비교하면 특정 시간대에 식사 후 혈당이 지속적으로 높아지는 패턴을 발견할 수 있습니다. 예를 들어, 저녁 식사 시간의 Meal Zone이 다른 시간대보다 자주 볼린저 밴드를 초과한다면, 해당 시간의 식단이나 활동량에 대한 재평가가 필요할 수 있습니다.
-                                    
+                                    **비교 분석**  
+                                    여러 Meal Zone을 비교하여 시간대별 혈당 패턴을 분석하고 특정 식단대에서 반복적으로 높은 혈당이 나타나는 원인을 파악할 수 있습니다. 예를 들어, 저녁 식사 시간의 Meal Zone이 다른 시간대보다 자주 볼린저 밴드를 초과한다면, 해당 시간의 식단이나 활동량에 대한 재평가가 필요할 수 있습니다.
                                     """, icon="ℹ️")
 
 
 
 
-    def draw_graph(self, user_uid, sdate, edate):
+    def draw_summary(self, user_uid, sdate, edate):
         st.markdown('#### Daily Summary')
         col1, col2, col3 = st.columns((1, 7, 3))
         with col2:
@@ -266,10 +307,10 @@ class Portfolio_Channel_Layout():
             fig.update_layout(margin=dict(l=10, r=10, t=10, b=10),height=200)  # 마진 최소화
 
             st.plotly_chart(fig , use_container_width=True)
-        with col3:
+        with col3.expander('설명', expanded=True):
             st.info(""" Daily Summary는 선택한 기간의 식사(식사 시작 시간 ~ 식사 종료 시간이며, 'Meal Zone' 과는 무관함), 운동, 복약, 혈당, 최대 혈당값, 최소 혈당값 등을 간단하게 요약 된 그래프를 볼 수 있습니다. 좀 더 다양한 멀티모달 정보(물 섭취, 수면, 처치 및 치료)들을 추가로 업로드 하기에 적절합니다. """, icon="ℹ️")
 
-    def draw_sub_graph(self,  user_uid, sdate, edate):
+    def draw_mealzone_graph(self,  user_uid, sdate, edate):
         st.markdown('#### Meal Zone Analysis(4hours)')
         col1, col2, col3 = st.columns((1, 7, 3))
 
@@ -302,20 +343,25 @@ class Portfolio_Channel_Layout():
             self.plot_meal_food(get_session_state(SESSION_MEAL_ID))
 
 
-        with col3:
+        with col3.expander('설명', expanded=True):
             st.info("""
-                                    일반적인 혈당의 y축 범위는  80~180 mg/dL이며, 그래프에서는 y축을 회색으로 표현하였습니다.
 
-                                    Meal Zone 개념 : Meal Zone은 식사 시작 시간부터 식사 시작 후 4시간까지의 구간을 나타냅니다. 식사 직후 혈당은 일반적으로 상승하기 시작하여 일정 시간 후 최고점에 도달하고, 이후 혈당이 정상 범위로 회복되는 패턴을 보입니다. 이 4시간 구간은 식사에 따른 혈당 변화를 명확하게 관찰할 수 있는 기준이 됩니다.
+                                    **Meal Zone 개념**  
+                                    Meal Zone은 식사 시작 시간부터 식사 시작 후 4시간까지의 구간을 나타냅니다. 이 구간은 식사에 따른 혈당 변화를 관찰하는 데 중요한 기준으로, 혈당이 식사 직후 상승한 후 최고점에 도달하고, 다시 정상 범위로 점차 회복되는 패턴을 명확히 보여줍니다.
+                                    
+                                    **회색영역**  
+                                    일반적인 혈당의 범위는 80~180 mg/dL이며, 그래프에서 이 범위(y axis)를 회색영역으로 표시하였습니다.
 
-                                    해당 분석 그래프는 Meal Zone 각각의 혈당 흐름과 최고 혈당, 최저 혈당을 볼 수 있으며, 혈당이 상승하거나 하강하는 패턴 등을 볼 수 있으며, 볼린저 밴드를 통해 적절한 식사를 통해 혈당 관리를 위한 식단을 잘 했는지, 혈당 관리를 위한 식단 관리에 미흡 했는지 등을 알 수 볼 수 있습니다.
+                                    **분석 그래프 설명**  
+                                    혈당 그래프와 Meal Zone에 속한 식단을 통해 해당 식단이 적절한지 객관적으로 평가 할 수 있습니다. 볼린저 밴드를 활용하여 혈당이 안정적으로 관리되었는지 확인할 수 있습니다. 이를 통해 식단이 혈당 관리에 적합했는지, 개선이 필요한지 판단할 수 있습니다. Meal Zone 내에서 최고 혈당, 최저 혈당, 그리고 혈당의 상승 및 하강 패턴을 시각적으로 확인 할 수 있습니다.
 
-                                    혈당 그래프와 Meal Zone에 속한 식사를 보고 객관적으로 적절한 식사를 했는지 평가가 가능하며, 혈당 그래프를 보고 먹어도 되는 식단인지 먹으면 안되는 식단인지 어느정도 유추가 가능해 다음번 식단에 좋은 영향을 줄 수 있주 있습니다.
+                                    **Meal Zone과 혈당 관리**  
+                                    **혈당이 일반적인 범위(80~180 mg/dL)**에 속할 경우 TIR 값을 통해 혈당 관리 상태를 평가할 수 있습니다.(*TIR 값이 높을 수록 혈당이 정상 범위에 머물렀음을 의미합니다. 혈당이 정상 범주를 크게 벗어나는 경우, TIR 값이 낮거나 0이 될 수 있습니다. 이때, 개인화된 혈당 범위를 기반으로 한 TIR 값을 보고 싶다면, 볼린저 밴드를 활용해 혈당 흐름과 변동성을 확인할 수 있습니다.
 
-                                    Meal Zone의 혈당 값이 일반적인 혈당의 범주에 속하게 된다면 TIR값을 받을 수 있으며, TIR값이 높을수록 혈당이 정상범주에 속했음을 알 수 있습니다. 대부분의 혈당이 높흔 환자군은 80~180 ml/dL범위를 크게 넘어서기에 TIR 값이 0이 나오며, 이때 개인화된 TIR을 보고 싶다면 볼린저 밴드를 통해 확인 할 수 있습니다.
+                                    **식단 개선에 대한 도움**  
+                                    그래프와 Meal Zone에 표시된 식단 정보를  통해 먹어도 되는 식단인지, 혹은 먹지 말아야 할 식단인지 유추가 가능합니다. 이를 바탕으로 다음 식단에 대한 개선 방향을 설정하고, 더 나은 혈당 관리를 도모할 수 있습니다.
 
                                     """, icon="ℹ️")
-            pass
 
 
 
