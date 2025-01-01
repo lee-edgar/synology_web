@@ -26,7 +26,7 @@ class Portfolio:
     def draw_portfolio_group_view(self):
         # st.image('penguin_mov.gif', use_column_width='auto')
         with st.expander(" 채널헬스케어 포트폴리오", expanded=True):
-            pdf_path = '채널헬스케어 포트폴리오.pdf'
+            pdf_path = '채널헬스케어_포트폴리오.pdf'
             pdf_viewer(
                 pdf_path,
                 width=1300,
